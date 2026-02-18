@@ -4,6 +4,7 @@ import GoogleMaps
 struct GoogleMapView: UIViewRepresentable {
     @ObservedObject var viewModel: MapOverlayViewModel
     var onVisibleRegionChanged: ((GMSVisibleRegion) -> Void)?
+    var targetCoordinate: CLLocationCoordinate2D?
 
     func makeUIView(context: Context) -> GMSMapView {
         let camera = GMSCameraPosition.camera(
@@ -19,10 +20,8 @@ struct GoogleMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: GMSMapView, context: Context) {
-        // Remove existing ground overlays
         mapView.clear()
 
-        // Add ground overlay when locked
         if viewModel.isLocked,
            let image = viewModel.selectedImage,
            let ne = viewModel.lockedNorthEast,
@@ -35,6 +34,18 @@ struct GoogleMapView: UIViewRepresentable {
             groundOverlay.opacity = Float(viewModel.opacity)
             groundOverlay.map = mapView
         }
+
+        if let target = targetCoordinate,
+           target.latitude != context.coordinator.lastTarget?.latitude ||
+           target.longitude != context.coordinator.lastTarget?.longitude {
+            context.coordinator.lastTarget = target
+            let camera = GMSCameraPosition.camera(
+                withLatitude: target.latitude,
+                longitude: target.longitude,
+                zoom: 15.0
+            )
+            mapView.animate(to: camera)
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -43,6 +54,7 @@ struct GoogleMapView: UIViewRepresentable {
 
     class Coordinator: NSObject, GMSMapViewDelegate {
         let parent: GoogleMapView
+        var lastTarget: CLLocationCoordinate2D?
 
         init(_ parent: GoogleMapView) {
             self.parent = parent

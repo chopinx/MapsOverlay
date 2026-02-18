@@ -7,7 +7,9 @@ struct ContentView: View {
     @State private var currentVisibleRegion: GMSVisibleRegion?
     @State private var saveOverlayName = ""
     @State private var showingSettings = false
+    @State private var showingSearch = false
     @State private var mapViewID = UUID()
+    @State private var searchTarget: CLLocationCoordinate2D?
 
     var body: some View {
         Group {
@@ -50,7 +52,8 @@ struct ContentView: View {
                 viewModel: viewModel,
                 onVisibleRegionChanged: { region in
                     currentVisibleRegion = region
-                }
+                },
+                targetCoordinate: searchTarget
             )
             .ignoresSafeArea(edges: .top)
 
@@ -66,6 +69,11 @@ struct ContentView: View {
         }
         .overlay(alignment: .topTrailing) {
             HStack(spacing: 8) {
+                Button { showingSearch = true } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                }
                 Button { showingSettings = true } label: {
                     Image(systemName: "gearshape")
                         .font(.title2)
@@ -75,6 +83,11 @@ struct ContentView: View {
             }
             .padding(.trailing, 12)
             .padding(.top, 8)
+        }
+        .sheet(isPresented: $showingSearch) {
+            PlaceSearchView { coordinate, _ in
+                searchTarget = coordinate
+            }
         }
         .sheet(isPresented: $viewModel.showingImagePicker) {
             ImagePicker(selectedImage: $viewModel.selectedImage)
