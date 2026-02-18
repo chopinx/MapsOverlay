@@ -21,7 +21,8 @@ final class OverlayStore {
         northEastLongitude: Double,
         southWestLatitude: Double,
         southWestLongitude: Double,
-        opacity: Double
+        opacity: Double,
+        rotation: Double = 0
     ) -> SavedOverlay? {
         let fileName = UUID().uuidString + ".png"
         let imageURL = overlaysDirectory.appendingPathComponent(fileName)
@@ -40,7 +41,8 @@ final class OverlayStore {
             northEastLongitude: northEastLongitude,
             southWestLatitude: southWestLatitude,
             southWestLongitude: southWestLongitude,
-            opacity: opacity
+            opacity: opacity,
+            rotation: rotation
         )
 
         var all = loadAll()

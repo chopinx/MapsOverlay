@@ -56,6 +56,20 @@ struct ControlPanelView: View {
                     }
                     .padding(.horizontal, 16)
 
+                    // Rotation slider
+                    HStack(spacing: 10) {
+                        Image(systemName: "rotate.right")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Slider(value: $viewModel.rotation, in: -180...180, step: 1)
+                            .tint(.orange)
+                        Text("\(Int(viewModel.rotation))°")
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, alignment: .trailing)
+                    }
+                    .padding(.horizontal, 16)
+
                     // Action buttons
                     HStack(spacing: 10) {
                         actionButton("Import", icon: "photo.on.rectangle") {
@@ -118,6 +132,22 @@ struct ControlPanelView: View {
                             .tint(.white)
                             .frame(width: 120)
                         Text("\(Int(viewModel.opacity * 100))%")
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.black.opacity(0.6), in: Capsule())
+
+                    // Rotation slider
+                    HStack(spacing: 8) {
+                        Image(systemName: "rotate.right")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.8))
+                        Slider(value: $viewModel.rotation, in: -180...180, step: 1)
+                            .tint(.orange)
+                            .frame(width: 120)
+                        Text("\(Int(viewModel.rotation))°")
                             .font(.subheadline.monospacedDigit())
                             .foregroundStyle(.white.opacity(0.8))
                     }

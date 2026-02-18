@@ -33,6 +33,7 @@ struct GoogleMapView: UIViewRepresentable {
             )
             let groundOverlay = GMSGroundOverlay(bounds: bounds, icon: image)
             groundOverlay.opacity = Float(viewModel.opacity)
+            groundOverlay.bearing = viewModel.rotation
             groundOverlay.map = mapView
         }
 

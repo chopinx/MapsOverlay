@@ -5,6 +5,7 @@ import GoogleMaps
 final class MapOverlayViewModel: ObservableObject {
     @Published var selectedImage: UIImage?
     @Published var opacity: Double = 0.5
+    @Published var rotation: Double = 0
     @Published var isLocked = false
     @Published var savedOverlays: [SavedOverlay] = []
     @Published var showingImagePicker = false
@@ -41,6 +42,7 @@ final class MapOverlayViewModel: ObservableObject {
     func removeOverlay() {
         selectedImage = nil
         isLocked = false
+        rotation = 0
         lockedNorthEast = nil
         lockedSouthWest = nil
     }
@@ -58,7 +60,8 @@ final class MapOverlayViewModel: ObservableObject {
             northEastLongitude: ne.longitude,
             southWestLatitude: sw.latitude,
             southWestLongitude: sw.longitude,
-            opacity: opacity
+            opacity: opacity,
+            rotation: rotation
         )
 
         if saved != nil {
@@ -70,6 +73,7 @@ final class MapOverlayViewModel: ObservableObject {
         guard let image = store.loadImage(for: overlay) else { return }
         selectedImage = image
         opacity = overlay.opacity
+        rotation = overlay.rotation
         lockedNorthEast = CLLocationCoordinate2D(
             latitude: overlay.northEastLatitude,
             longitude: overlay.northEastLongitude

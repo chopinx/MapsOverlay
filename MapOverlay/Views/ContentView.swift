@@ -64,7 +64,7 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             if let image = viewModel.selectedImage, !viewModel.isLocked {
-                OverlayImageView(image: image, opacity: viewModel.opacity)
+                OverlayImageView(image: image, opacity: viewModel.opacity, rotation: viewModel.rotation)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }

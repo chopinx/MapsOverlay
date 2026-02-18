@@ -9,6 +9,7 @@ struct SavedOverlay: Codable, Identifiable {
     let southWestLatitude: Double
     let southWestLongitude: Double
     var opacity: Double
+    var rotation: Double
     let createdAt: Date
 
     init(
@@ -18,7 +19,8 @@ struct SavedOverlay: Codable, Identifiable {
         northEastLongitude: Double,
         southWestLatitude: Double,
         southWestLongitude: Double,
-        opacity: Double
+        opacity: Double,
+        rotation: Double = 0
     ) {
         self.id = UUID()
         self.name = name
@@ -28,6 +30,7 @@ struct SavedOverlay: Codable, Identifiable {
         self.southWestLatitude = southWestLatitude
         self.southWestLongitude = southWestLongitude
         self.opacity = opacity
+        self.rotation = rotation
         self.createdAt = Date()
     }
 }
