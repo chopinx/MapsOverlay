@@ -9,9 +9,9 @@ struct ContentView: View {
     @State private var saveOverlayName = ""
     @State private var showingSettings = false
     @State private var showingSearch = false
+    @State private var showingPins = false
     @State private var mapViewID = UUID()
-    @State private var searchTarget: CLLocationCoordinate2D?
-    @State private var searchPinTitle: String?
+    @State private var animateTarget: CLLocationCoordinate2D?
 
     var body: some View {
         Group {
@@ -59,8 +59,7 @@ struct ContentView: View {
                 onVisibleRegionChanged: { region in
                     currentVisibleRegion = region
                 },
-                targetCoordinate: searchTarget,
-                pinTitle: searchPinTitle
+                animateToCoordinate: animateTarget
             )
             .ignoresSafeArea()
 
@@ -81,8 +80,16 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingSearch) {
             PlaceSearchView { coordinate, name in
-                searchTarget = coordinate
-                searchPinTitle = name
+                viewModel.addPin(name: name, coordinate: coordinate)
+                animateTarget = coordinate
+            }
+        }
+        .sheet(isPresented: $showingPins) {
+            SavedPinsView(viewModel: viewModel) { pin in
+                animateTarget = CLLocationCoordinate2D(
+                    latitude: pin.latitude,
+                    longitude: pin.longitude
+                )
             }
         }
         .sheet(isPresented: $viewModel.showingImagePicker) {
@@ -114,6 +121,9 @@ struct ContentView: View {
         HStack(spacing: 10) {
             circleButton(icon: "magnifyingglass") {
                 showingSearch = true
+            }
+            circleButton(icon: "mappin.and.ellipse") {
+                showingPins = true
             }
             circleButton(icon: "gearshape") {
                 showingSettings = true

@@ -10,15 +10,19 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var showingImagePicker = false
     @Published var showingSavedOverlays = false
     @Published var showingSaveDialog = false
+    @Published var savedPins: [SavedPin] = []
+    @Published var showingSavedPins = false
 
     // The geographic bounds captured when the overlay is locked
     var lockedNorthEast: CLLocationCoordinate2D?
     var lockedSouthWest: CLLocationCoordinate2D?
 
     private let store = OverlayStore()
+    private let pinStore = PinStore()
 
     init() {
         savedOverlays = store.loadAll()
+        savedPins = pinStore.loadAll()
     }
 
     func lockOverlay(visibleRegion: GMSVisibleRegion) {
@@ -80,5 +84,23 @@ final class MapOverlayViewModel: ObservableObject {
     func deleteOverlay(_ overlay: SavedOverlay) {
         store.delete(overlay)
         savedOverlays = store.loadAll()
+    }
+
+    // MARK: - Pin management
+
+    func addPin(name: String, coordinate: CLLocationCoordinate2D) {
+        let pin = SavedPin(name: name, latitude: coordinate.latitude, longitude: coordinate.longitude)
+        savedPins.append(pin)
+        pinStore.save(savedPins)
+    }
+
+    func deletePin(_ pin: SavedPin) {
+        savedPins.removeAll { $0.id == pin.id }
+        pinStore.save(savedPins)
+    }
+
+    func clearAllPins() {
+        savedPins.removeAll()
+        pinStore.save(savedPins)
     }
 }

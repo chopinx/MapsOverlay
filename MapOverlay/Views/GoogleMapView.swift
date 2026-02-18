@@ -4,8 +4,7 @@ import GoogleMaps
 struct GoogleMapView: UIViewRepresentable {
     @ObservedObject var viewModel: MapOverlayViewModel
     var onVisibleRegionChanged: ((GMSVisibleRegion) -> Void)?
-    var targetCoordinate: CLLocationCoordinate2D?
-    var pinTitle: String?
+    var animateToCoordinate: CLLocationCoordinate2D?
 
     func makeUIView(context: Context) -> GMSMapView {
         let camera = GMSCameraPosition.camera(
@@ -37,23 +36,27 @@ struct GoogleMapView: UIViewRepresentable {
             groundOverlay.map = mapView
         }
 
-        // Search pin marker
-        if let target = targetCoordinate {
-            let marker = GMSMarker(position: target)
-            marker.title = pinTitle
+        // Saved pin markers
+        for pin in viewModel.savedPins {
+            let marker = GMSMarker(position: CLLocationCoordinate2D(
+                latitude: pin.latitude,
+                longitude: pin.longitude
+            ))
+            marker.title = pin.name
             marker.map = mapView
+        }
 
-            // Animate to target if it changed
-            if target.latitude != context.coordinator.lastTarget?.latitude ||
-               target.longitude != context.coordinator.lastTarget?.longitude {
-                context.coordinator.lastTarget = target
-                let camera = GMSCameraPosition.camera(
-                    withLatitude: target.latitude,
-                    longitude: target.longitude,
-                    zoom: 15.0
-                )
-                mapView.animate(to: camera)
-            }
+        // Animate to newly added pin
+        if let target = animateToCoordinate,
+           target.latitude != context.coordinator.lastTarget?.latitude ||
+           target.longitude != context.coordinator.lastTarget?.longitude {
+            context.coordinator.lastTarget = target
+            let camera = GMSCameraPosition.camera(
+                withLatitude: target.latitude,
+                longitude: target.longitude,
+                zoom: 15.0
+            )
+            mapView.animate(to: camera)
         }
     }
 
