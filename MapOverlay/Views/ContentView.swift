@@ -76,7 +76,7 @@ struct ContentView: View {
                 ControlPanelView(viewModel: viewModel)
             }
         }
-        .overlay(alignment: .topTrailing) {
+        .overlay(alignment: .topLeading) {
             topBar
         }
         .sheet(isPresented: $showingSearch) {
@@ -120,7 +120,7 @@ struct ContentView: View {
             }
             SignInView(authService: authService)
         }
-        .padding(.trailing, 16)
+        .padding(.leading, 16)
         .padding(.top, 12)
     }
 

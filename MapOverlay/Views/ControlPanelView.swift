@@ -26,8 +26,8 @@ struct ControlPanelView: View {
             }
         }
         .padding(.bottom, 24)
-        .padding(.trailing, 16)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.leading, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Alignment mode: full panel for adjustments
@@ -88,10 +88,10 @@ struct ControlPanelView: View {
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
-    // MARK: - Locked: compact floating controls (bottom-right)
+    // MARK: - Locked: compact floating controls (bottom-left)
 
     private var lockedView: some View {
-        VStack(alignment: .trailing, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             if showLockedControls {
                 VStack(spacing: 8) {
                     // Opacity slider (compact)
@@ -124,7 +124,7 @@ struct ControlPanelView: View {
                         }
                     }
                 }
-                .transition(.scale(scale: 0.8, anchor: .bottomTrailing).combined(with: .opacity))
+                .transition(.scale(scale: 0.8, anchor: .bottomLeading).combined(with: .opacity))
             }
 
             // Toggle button
@@ -141,8 +141,8 @@ struct ControlPanelView: View {
             }
         }
         .padding(.bottom, 24)
-        .padding(.trailing, 16)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.leading, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Button styles
