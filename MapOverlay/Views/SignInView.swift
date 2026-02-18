@@ -15,16 +15,22 @@ struct SignInView: View {
                 }
             } label: {
                 Image(systemName: "person.circle.fill")
-                    .font(.title2)
+                    .font(.body)
                     .foregroundColor(.blue)
+                    .frame(width: 40, height: 40)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
         } else {
             Button {
                 authService.signIn()
             } label: {
                 Image(systemName: "person.circle")
-                    .font(.title2)
-                    .foregroundColor(.gray)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                    .frame(width: 40, height: 40)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
         }
     }

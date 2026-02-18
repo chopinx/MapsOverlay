@@ -5,6 +5,7 @@ struct GoogleMapView: UIViewRepresentable {
     @ObservedObject var viewModel: MapOverlayViewModel
     var onVisibleRegionChanged: ((GMSVisibleRegion) -> Void)?
     var targetCoordinate: CLLocationCoordinate2D?
+    var pinTitle: String?
 
     func makeUIView(context: Context) -> GMSMapView {
         let camera = GMSCameraPosition.camera(
@@ -22,6 +23,7 @@ struct GoogleMapView: UIViewRepresentable {
     func updateUIView(_ mapView: GMSMapView, context: Context) {
         mapView.clear()
 
+        // Ground overlay when locked
         if viewModel.isLocked,
            let image = viewModel.selectedImage,
            let ne = viewModel.lockedNorthEast,
@@ -35,16 +37,23 @@ struct GoogleMapView: UIViewRepresentable {
             groundOverlay.map = mapView
         }
 
-        if let target = targetCoordinate,
-           target.latitude != context.coordinator.lastTarget?.latitude ||
-           target.longitude != context.coordinator.lastTarget?.longitude {
-            context.coordinator.lastTarget = target
-            let camera = GMSCameraPosition.camera(
-                withLatitude: target.latitude,
-                longitude: target.longitude,
-                zoom: 15.0
-            )
-            mapView.animate(to: camera)
+        // Search pin marker
+        if let target = targetCoordinate {
+            let marker = GMSMarker(position: target)
+            marker.title = pinTitle
+            marker.map = mapView
+
+            // Animate to target if it changed
+            if target.latitude != context.coordinator.lastTarget?.latitude ||
+               target.longitude != context.coordinator.lastTarget?.longitude {
+                context.coordinator.lastTarget = target
+                let camera = GMSCameraPosition.camera(
+                    withLatitude: target.latitude,
+                    longitude: target.longitude,
+                    zoom: 15.0
+                )
+                mapView.animate(to: camera)
+            }
         }
     }
 

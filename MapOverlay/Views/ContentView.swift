@@ -1,5 +1,6 @@
 import SwiftUI
 import GoogleMaps
+import CoreLocation
 
 struct ContentView: View {
     @StateObject private var viewModel = MapOverlayViewModel()
@@ -10,6 +11,7 @@ struct ContentView: View {
     @State private var showingSearch = false
     @State private var mapViewID = UUID()
     @State private var searchTarget: CLLocationCoordinate2D?
+    @State private var searchPinTitle: String?
 
     var body: some View {
         Group {
@@ -29,64 +31,58 @@ struct ContentView: View {
     }
 
     private var setupPrompt: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "map")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
-            Text("Welcome to MapOverlay")
+        VStack(spacing: 24) {
+            Image(systemName: "map.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(.blue.gradient)
+            Text("Welcome to MapsOverlay")
                 .font(.title2.bold())
             Text("Add your Google Maps API key to get started.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-            Button("Open Settings") {
+            Button {
                 showingSettings = true
+            } label: {
+                Label("Open Settings", systemImage: "gearshape")
+                    .font(.body.bold())
             }
             .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
-        .padding()
+        .padding(32)
     }
 
     private var mapView: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             GoogleMapView(
                 viewModel: viewModel,
                 onVisibleRegionChanged: { region in
                     currentVisibleRegion = region
                 },
-                targetCoordinate: searchTarget
+                targetCoordinate: searchTarget,
+                pinTitle: searchPinTitle
             )
-            .ignoresSafeArea(edges: .top)
+            .ignoresSafeArea()
 
             if let image = viewModel.selectedImage, !viewModel.isLocked {
                 OverlayImageView(image: image, opacity: viewModel.opacity)
-                    .ignoresSafeArea(edges: .top)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
             }
 
-            VStack(spacing: 0) {
+            // Control panel (collapses when locked)
+            VStack {
                 Spacer()
                 ControlPanelView(viewModel: viewModel)
             }
         }
         .overlay(alignment: .topTrailing) {
-            HStack(spacing: 8) {
-                Button { showingSearch = true } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                }
-                Button { showingSettings = true } label: {
-                    Image(systemName: "gearshape")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                }
-                SignInView(authService: authService)
-            }
-            .padding(.trailing, 12)
-            .padding(.top, 8)
+            topBar
         }
         .sheet(isPresented: $showingSearch) {
-            PlaceSearchView { coordinate, _ in
+            PlaceSearchView { coordinate, name in
                 searchTarget = coordinate
+                searchPinTitle = name
             }
         }
         .sheet(isPresented: $viewModel.showingImagePicker) {
@@ -111,6 +107,34 @@ struct ContentView: View {
             if let region = currentVisibleRegion {
                 viewModel.lockOverlay(visibleRegion: region)
             }
+        }
+    }
+
+    private var topBar: some View {
+        HStack(spacing: 10) {
+            circleButton(icon: "magnifyingglass") {
+                showingSearch = true
+            }
+            circleButton(icon: "gearshape") {
+                showingSettings = true
+            }
+            SignInView(authService: authService)
+        }
+        .padding(.trailing, 16)
+        .padding(.top, 12)
+    }
+
+    private func circleButton(
+        icon: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundColor(.primary)
+                .frame(width: 40, height: 40)
+                .background(.ultraThinMaterial, in: Circle())
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
         }
     }
 }
