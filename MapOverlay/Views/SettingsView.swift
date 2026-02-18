@@ -1,10 +1,10 @@
 import SwiftUI
+import GoogleMaps
 
 struct SettingsView: View {
     @ObservedObject var authService: GoogleAuthService
     @Environment(\.dismiss) private var dismiss
     @State private var apiKey: String = Config.googleMapsAPIKey
-    @State private var showingRestartAlert = false
 
     var body: some View {
         NavigationStack {
@@ -17,7 +17,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Google Maps")
                 } footer: {
-                    Text("Get an API key from the Google Cloud Console. The app needs to restart after changing this.")
+                    Text("Get an API key from the Google Cloud Console.")
                 }
 
                 Section("Google Account") {
@@ -60,18 +60,19 @@ struct SettingsView: View {
                         let trimmed = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
                         if trimmed != Config.googleMapsAPIKey {
                             Config.googleMapsAPIKey = trimmed
-                            showingRestartAlert = true
-                        } else {
-                            dismiss()
+                            if !trimmed.isEmpty {
+                                GMSServices.provideAPIKey(trimmed)
+                            }
+                            NotificationCenter.default.post(name: .apiKeyChanged, object: nil)
                         }
+                        dismiss()
                     }
                 }
             }
-            .alert("Restart Required", isPresented: $showingRestartAlert) {
-                Button("OK") { dismiss() }
-            } message: {
-                Text("Please restart the app for the new API key to take effect.")
-            }
         }
     }
+}
+
+extension Notification.Name {
+    static let apiKeyChanged = Notification.Name("apiKeyChanged")
 }

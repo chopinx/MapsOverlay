@@ -7,17 +7,22 @@ struct ContentView: View {
     @State private var currentVisibleRegion: GMSVisibleRegion?
     @State private var saveOverlayName = ""
     @State private var showingSettings = false
+    @State private var mapViewID = UUID()
 
     var body: some View {
         Group {
             if Config.hasAPIKey {
                 mapView
+                    .id(mapViewID)
             } else {
                 setupPrompt
             }
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView(authService: authService)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .apiKeyChanged)) { _ in
+            mapViewID = UUID()
         }
     }
 
