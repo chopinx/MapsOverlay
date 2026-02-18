@@ -15,23 +15,19 @@ struct ControlPanelView: View {
         }
     }
 
-    // MARK: - Idle (no image loaded)
+    // MARK: - Idle
 
     private var idleView: some View {
         HStack(spacing: 10) {
-            actionButton("Import", icon: "photo.on.rectangle") {
-                viewModel.showingImagePicker = true
-            }
-            actionButton("Saved", icon: "bookmark") {
-                viewModel.showingSavedOverlays = true
-            }
+            circleIcon("photo.on.rectangle") { viewModel.showingImagePicker = true }
+            circleIcon("bookmark") { viewModel.showingSavedOverlays = true }
         }
         .padding(.bottom, 24)
         .padding(.leading, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Alignment mode
+    // MARK: - Alignment
 
     private var alignmentView: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -42,54 +38,14 @@ struct ControlPanelView: View {
                         .frame(width: 36, height: 5)
                         .padding(.top, 10)
 
-                    // Opacity slider
+                    sliderRow("circle.lefthalf.filled", value: $viewModel.opacity, range: 0.05...1.0, tint: .blue)
+                    sliderRow("rotate.right", value: $viewModel.rotation, range: -180...180, step: 1, tint: .orange)
+
                     HStack(spacing: 10) {
-                        Image(systemName: "circle.lefthalf.filled")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Slider(value: $viewModel.opacity, in: 0.05...1.0)
-                            .tint(.blue)
-                        Text("\(Int(viewModel.opacity * 100))%")
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, alignment: .trailing)
-                    }
-                    .padding(.horizontal, 16)
-
-                    // Rotation slider
-                    HStack(spacing: 10) {
-                        Image(systemName: "rotate.right")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Slider(value: $viewModel.rotation, in: -180...180, step: 1)
-                            .tint(.orange)
-                        Text("\(Int(viewModel.rotation))°")
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, alignment: .trailing)
-                    }
-                    .padding(.horizontal, 16)
-
-                    // Action buttons
-                    HStack(spacing: 10) {
-                        actionButton("Import", icon: "photo.on.rectangle") {
-                            viewModel.showingImagePicker = true
+                        circleIcon("lock.fill", tint: .green) {
+                            NotificationCenter.default.post(name: .lockOverlayRequested, object: nil)
                         }
-                        actionButton("Saved", icon: "bookmark") {
-                            viewModel.showingSavedOverlays = true
-                        }
-
-                        Spacer()
-
-                        actionButton("Lock", icon: "lock.fill", tint: .green) {
-                            NotificationCenter.default.post(
-                                name: .lockOverlayRequested,
-                                object: nil
-                            )
-                        }
-                        actionButton("Remove", icon: "trash", tint: .red) {
-                            viewModel.removeOverlay()
-                        }
+                        circleIcon("trash", tint: .red) { viewModel.removeOverlay() }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 14)
@@ -100,71 +56,32 @@ struct ControlPanelView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            // Hide/show toggle
-            Button {
-                withAnimation(.spring(response: 0.3)) {
-                    hideAlignmentPanel.toggle()
-                }
-            } label: {
-                Image(systemName: hideAlignmentPanel ? "slider.horizontal.3" : "chevron.down")
-                    .font(.body.bold())
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .background(.black.opacity(0.6), in: Circle())
+            toggleButton(icon: hideAlignmentPanel ? "slider.horizontal.3" : "chevron.down") {
+                hideAlignmentPanel.toggle()
             }
             .padding(.leading, 16)
         }
         .padding(.bottom, 8)
     }
 
-    // MARK: - Locked mode
+    // MARK: - Locked
 
     private var lockedView: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showLockedControls {
                 VStack(alignment: .leading, spacing: 10) {
-                    // Opacity slider
-                    HStack(spacing: 8) {
-                        Image(systemName: "circle.lefthalf.filled")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.8))
-                        Slider(value: $viewModel.opacity, in: 0.05...1.0)
-                            .tint(.white)
-                            .frame(width: 120)
-                        Text("\(Int(viewModel.opacity * 100))%")
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.white.opacity(0.8))
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(.black.opacity(0.6), in: Capsule())
+                    darkSliderRow("circle.lefthalf.filled", value: $viewModel.opacity, range: 0.05...1.0, tint: .white)
+                    darkSliderRow("rotate.right", value: $viewModel.rotation, range: -180...180, step: 1, tint: .orange)
 
-                    // Rotation slider
                     HStack(spacing: 8) {
-                        Image(systemName: "rotate.right")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.8))
-                        Slider(value: $viewModel.rotation, in: -180...180, step: 1)
-                            .tint(.orange)
-                            .frame(width: 120)
-                        Text("\(Int(viewModel.rotation))°")
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.white.opacity(0.8))
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(.black.opacity(0.6), in: Capsule())
-
-                    // Action buttons with labels
-                    HStack(spacing: 8) {
-                        labeledButton("Unlock", icon: "lock.open.fill", tint: .orange) {
+                        darkCircleIcon("lock.open.fill", tint: .orange) {
                             withAnimation { showLockedControls = false }
                             viewModel.unlockOverlay()
                         }
-                        labeledButton("Save", icon: "square.and.arrow.down", tint: .cyan) {
+                        darkCircleIcon("square.and.arrow.down", tint: .cyan) {
                             viewModel.showingSaveDialog = true
                         }
-                        labeledButton("Remove", icon: "trash", tint: .red) {
+                        darkCircleIcon("trash", tint: .red) {
                             withAnimation { showLockedControls = false }
                             viewModel.removeOverlay()
                         }
@@ -173,17 +90,8 @@ struct ControlPanelView: View {
                 .transition(.scale(scale: 0.8, anchor: .bottomLeading).combined(with: .opacity))
             }
 
-            // Toggle button
-            Button {
-                withAnimation(.spring(response: 0.3)) {
-                    showLockedControls.toggle()
-                }
-            } label: {
-                Image(systemName: showLockedControls ? "xmark" : "ellipsis")
-                    .font(.body.bold())
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .background(.black.opacity(0.6), in: Circle())
+            toggleButton(icon: showLockedControls ? "xmark" : "ellipsis") {
+                showLockedControls.toggle()
             }
         }
         .padding(.bottom, 24)
@@ -191,43 +99,68 @@ struct ControlPanelView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Button styles
+    // MARK: - Components
 
-    /// Pill button used in idle and alignment modes
-    private func actionButton(
-        _ title: String,
-        icon: String,
-        tint: Color = .blue,
-        action: @escaping () -> Void
-    ) -> some View {
+    private func circleIcon(_ icon: String, tint: Color = .blue, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: icon)
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 9)
-                .background(tint.opacity(0.15), in: Capsule())
+            Image(systemName: icon)
+                .font(.body)
+                .padding(10)
+                .background(tint.opacity(0.15), in: Circle())
                 .foregroundStyle(tint)
         }
     }
 
-    /// Labeled circle button used in locked mode
-    private func labeledButton(
-        _ title: String,
-        icon: String,
-        tint: Color = .white,
-        action: @escaping () -> Void
-    ) -> some View {
+    private func darkCircleIcon(_ icon: String, tint: Color = .white, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.body)
-                    .frame(width: 42, height: 42)
-                    .background(.black.opacity(0.6), in: Circle())
-                Text(title)
-                    .font(.caption2.weight(.medium))
-            }
-            .foregroundStyle(tint)
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(tint)
+                .frame(width: 42, height: 42)
+                .background(.black.opacity(0.6), in: Circle())
         }
+    }
+
+    private func toggleButton(icon: String, action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.3)) { action() }
+        } label: {
+            Image(systemName: icon)
+                .font(.body.bold())
+                .foregroundColor(.white)
+                .frame(width: 44, height: 44)
+                .background(.black.opacity(0.6), in: Circle())
+        }
+    }
+
+    private func sliderRow(_ icon: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 0, tint: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            if step > 0 {
+                Slider(value: value, in: range, step: step).tint(tint)
+            } else {
+                Slider(value: value, in: range).tint(tint)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
+    private func darkSliderRow(_ icon: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 0, tint: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.8))
+            if step > 0 {
+                Slider(value: value, in: range, step: step).tint(tint).frame(width: 140)
+            } else {
+                Slider(value: value, in: range).tint(tint).frame(width: 140)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.black.opacity(0.6), in: Capsule())
     }
 }
 
