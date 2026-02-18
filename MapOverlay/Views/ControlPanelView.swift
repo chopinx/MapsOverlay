@@ -3,6 +3,7 @@ import SwiftUI
 struct ControlPanelView: View {
     @ObservedObject var viewModel: MapOverlayViewModel
     @State private var showLockedControls = false
+    @State private var hideAlignmentPanel = false
 
     var body: some View {
         if viewModel.isLocked {
@@ -33,59 +34,77 @@ struct ControlPanelView: View {
     // MARK: - Alignment mode: full panel for adjustments
 
     private var alignmentView: some View {
-        VStack(spacing: 10) {
-            // Drag handle
-            Capsule()
-                .fill(Color.secondary.opacity(0.4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 8)
+        VStack(alignment: .leading, spacing: 8) {
+            if !hideAlignmentPanel {
+                VStack(spacing: 10) {
+                    // Drag handle
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.4))
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 8)
 
-            // Opacity slider
-            HStack(spacing: 8) {
-                Image(systemName: "sun.min")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Slider(value: $viewModel.opacity, in: 0.05...1.0)
-                    .tint(.blue)
-                Image(systemName: "sun.max.fill")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text("\(Int(viewModel.opacity * 100))%")
-                    .font(.caption.monospacedDigit())
-                    .foregroundColor(.secondary)
-                    .frame(width: 36)
+                    // Opacity slider
+                    HStack(spacing: 8) {
+                        Image(systemName: "sun.min")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Slider(value: $viewModel.opacity, in: 0.05...1.0)
+                            .tint(.blue)
+                        Image(systemName: "sun.max.fill")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(Int(viewModel.opacity * 100))%")
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary)
+                            .frame(width: 36)
+                    }
+                    .padding(.horizontal, 16)
+
+                    // Action buttons
+                    HStack(spacing: 12) {
+                        pillButton("Import", icon: "photo.on.rectangle") {
+                            viewModel.showingImagePicker = true
+                        }
+                        pillButton("Saved", icon: "bookmark") {
+                            viewModel.showingSavedOverlays = true
+                        }
+
+                        Spacer()
+
+                        pillButton("Lock", icon: "lock.fill", tint: .green) {
+                            NotificationCenter.default.post(
+                                name: .lockOverlayRequested,
+                                object: nil
+                            )
+                        }
+                        pillButton("Remove", icon: "trash", tint: .red) {
+                            viewModel.removeOverlay()
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 8)
+                .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            .padding(.horizontal, 16)
 
-            // Action buttons
-            HStack(spacing: 12) {
-                pillButton("Import", icon: "photo.on.rectangle") {
-                    viewModel.showingImagePicker = true
+            // Hide/show toggle
+            Button {
+                withAnimation(.spring(response: 0.3)) {
+                    hideAlignmentPanel.toggle()
                 }
-                pillButton("Saved", icon: "bookmark") {
-                    viewModel.showingSavedOverlays = true
-                }
-
-                Spacer()
-
-                pillButton("Lock", icon: "lock.fill", tint: .green) {
-                    NotificationCenter.default.post(
-                        name: .lockOverlayRequested,
-                        object: nil
-                    )
-                }
-                pillButton("Remove", icon: "trash", tint: .red) {
-                    viewModel.removeOverlay()
-                }
+            } label: {
+                Image(systemName: hideAlignmentPanel ? "slider.horizontal.3" : "chevron.down")
+                    .font(.body.bold())
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(.black.opacity(0.6), in: Circle())
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            .padding(.leading, 16)
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 8)
         .padding(.bottom, 8)
-        .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     // MARK: - Locked: compact floating controls (bottom-left)
