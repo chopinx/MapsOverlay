@@ -15,14 +15,14 @@ struct ControlPanelView: View {
         }
     }
 
-    // MARK: - Idle (no image loaded): minimal floating buttons
+    // MARK: - Idle (no image loaded)
 
     private var idleView: some View {
-        HStack(spacing: 12) {
-            pillButton("Import", icon: "photo.on.rectangle") {
+        HStack(spacing: 10) {
+            actionButton("Import", icon: "photo.on.rectangle") {
                 viewModel.showingImagePicker = true
             }
-            pillButton("Saved", icon: "bookmark") {
+            actionButton("Saved", icon: "bookmark") {
                 viewModel.showingSavedOverlays = true
             }
         }
@@ -31,58 +31,54 @@ struct ControlPanelView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Alignment mode: full panel for adjustments
+    // MARK: - Alignment mode
 
     private var alignmentView: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !hideAlignmentPanel {
-                VStack(spacing: 10) {
-                    // Drag handle
+                VStack(spacing: 12) {
                     Capsule()
                         .fill(Color.secondary.opacity(0.4))
                         .frame(width: 36, height: 5)
-                        .padding(.top, 8)
+                        .padding(.top, 10)
 
                     // Opacity slider
-                    HStack(spacing: 8) {
-                        Image(systemName: "sun.min")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    HStack(spacing: 10) {
+                        Image(systemName: "circle.lefthalf.filled")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                         Slider(value: $viewModel.opacity, in: 0.05...1.0)
                             .tint(.blue)
-                        Image(systemName: "sun.max.fill")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                         Text("\(Int(viewModel.opacity * 100))%")
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                            .frame(width: 36)
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, alignment: .trailing)
                     }
                     .padding(.horizontal, 16)
 
                     // Action buttons
-                    HStack(spacing: 12) {
-                        pillButton("Import", icon: "photo.on.rectangle") {
+                    HStack(spacing: 10) {
+                        actionButton("Import", icon: "photo.on.rectangle") {
                             viewModel.showingImagePicker = true
                         }
-                        pillButton("Saved", icon: "bookmark") {
+                        actionButton("Saved", icon: "bookmark") {
                             viewModel.showingSavedOverlays = true
                         }
 
                         Spacer()
 
-                        pillButton("Lock", icon: "lock.fill", tint: .green) {
+                        actionButton("Lock", icon: "lock.fill", tint: .green) {
                             NotificationCenter.default.post(
                                 name: .lockOverlayRequested,
                                 object: nil
                             )
                         }
-                        pillButton("Remove", icon: "trash", tint: .red) {
+                        actionButton("Remove", icon: "trash", tint: .red) {
                             viewModel.removeOverlay()
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 14)
                 }
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .padding(.horizontal, 8)
@@ -107,37 +103,38 @@ struct ControlPanelView: View {
         .padding(.bottom, 8)
     }
 
-    // MARK: - Locked: compact floating controls (bottom-left)
+    // MARK: - Locked mode
 
     private var lockedView: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             if showLockedControls {
-                VStack(spacing: 8) {
-                    // Opacity slider (compact)
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Opacity slider
+                    HStack(spacing: 8) {
                         Image(systemName: "circle.lefthalf.filled")
-                            .font(.caption2)
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.8))
                         Slider(value: $viewModel.opacity, in: 0.05...1.0)
                             .tint(.white)
-                            .frame(width: 100)
+                            .frame(width: 120)
                         Text("\(Int(viewModel.opacity * 100))%")
-                            .font(.caption2.monospacedDigit())
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.white.opacity(0.8))
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
                     .background(.black.opacity(0.6), in: Capsule())
 
+                    // Action buttons with labels
                     HStack(spacing: 8) {
-                        compactButton("Unlock", icon: "lock.open.fill", tint: .orange) {
+                        labeledButton("Unlock", icon: "lock.open.fill", tint: .orange) {
                             withAnimation { showLockedControls = false }
                             viewModel.unlockOverlay()
                         }
-                        compactButton("Save", icon: "square.and.arrow.down", tint: .blue) {
+                        labeledButton("Save", icon: "square.and.arrow.down", tint: .cyan) {
                             viewModel.showingSaveDialog = true
                         }
-                        compactButton("Remove", icon: "trash", tint: .red) {
+                        labeledButton("Remove", icon: "trash", tint: .red) {
                             withAnimation { showLockedControls = false }
                             viewModel.removeOverlay()
                         }
@@ -166,7 +163,8 @@ struct ControlPanelView: View {
 
     // MARK: - Button styles
 
-    private func pillButton(
+    /// Pill button used in idle and alignment modes
+    private func actionButton(
         _ title: String,
         icon: String,
         tint: Color = .blue,
@@ -174,26 +172,31 @@ struct ControlPanelView: View {
     ) -> some View {
         Button(action: action) {
             Label(title, systemImage: icon)
-                .font(.caption.bold())
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
                 .background(tint.opacity(0.15), in: Capsule())
-                .foregroundColor(tint)
+                .foregroundStyle(tint)
         }
     }
 
-    private func compactButton(
+    /// Labeled circle button used in locked mode
+    private func labeledButton(
         _ title: String,
         icon: String,
         tint: Color = .white,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            Image(systemName: icon)
-                .font(.callout)
-                .foregroundColor(tint)
-                .frame(width: 40, height: 40)
-                .background(.black.opacity(0.6), in: Circle())
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .frame(width: 42, height: 42)
+                    .background(.black.opacity(0.6), in: Circle())
+                Text(title)
+                    .font(.caption2.weight(.medium))
+            }
+            .foregroundStyle(tint)
         }
     }
 }
