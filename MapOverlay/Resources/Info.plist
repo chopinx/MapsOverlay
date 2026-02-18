@@ -31,6 +31,8 @@
     </array>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>MapOverlay needs access to your photo library to import overlay images.</string>
+    <key>GIDClientID</key>
+    <string>773104774563-nddqjsm0ljrghkjp403vu7evaum0sk7d.apps.googleusercontent.com</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
