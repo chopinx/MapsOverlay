@@ -5,6 +5,8 @@ struct ImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     @Environment(\.dismiss) private var dismiss
 
+    private static let maxDimension: CGFloat = 4096
+
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
@@ -35,9 +37,25 @@ struct ImagePicker: UIViewControllerRepresentable {
             else { return }
 
             provider.loadObject(ofClass: UIImage.self) { [weak self] image, _ in
+                guard let self, let picked = image as? UIImage else { return }
+                let final = Self.downscaleIfNeeded(picked, maxDimension: ImagePicker.maxDimension)
                 DispatchQueue.main.async {
-                    self?.parent.selectedImage = image as? UIImage
+                    self.parent.selectedImage = final
                 }
+            }
+        }
+
+        private static func downscaleIfNeeded(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+            let width = image.size.width
+            let height = image.size.height
+            guard width > maxDimension || height > maxDimension else { return image }
+
+            let scale = min(maxDimension / width, maxDimension / height)
+            let newSize = CGSize(width: width * scale, height: height * scale)
+
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            return renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: newSize))
             }
         }
     }

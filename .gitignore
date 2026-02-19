@@ -29,3 +29,9 @@ Pods/
 *~
 xcuserdata/
 .spm-packages/
+
+# Secrets & sensitive config
+*.xcconfig
+Secrets.swift
+GoogleService-Info.plist
+**/Secrets/

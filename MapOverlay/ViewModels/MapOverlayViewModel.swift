@@ -15,24 +15,39 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var currentBoundary: PlaceBoundary?
     @Published var isTransformMode = false
     @Published var transformCorners: FreeTransformCorners = .identity
+    @Published var errorMessage: String?
+    @Published var currentVisibleRegion: GMSVisibleRegion?
+    @Published var animateTarget: CLLocationCoordinate2D?
+    @Published var lockedNorthEast: CLLocationCoordinate2D?
+    @Published var lockedSouthWest: CLLocationCoordinate2D?
+    @Published var searchResults: [SearchResult] = []
 
-    // The geographic bounds captured when the overlay is locked
-    var lockedNorthEast: CLLocationCoordinate2D?
-    var lockedSouthWest: CLLocationCoordinate2D?
-
-    private let store = OverlayStore()
-    private let pinStore = PinStore()
-    private let boundaryService = BoundaryService()
-    private let transformService = FreeTransformService()
+    private let store: OverlayStore
+    private let pinStore: PinStore
+    private let boundaryService: BoundaryService
+    private let transformService: FreeTransformService
+    private let geocodingService: GeocodingService
     private var originalImage: UIImage?
 
-    init() {
+    init(
+        store: OverlayStore = .init(),
+        pinStore: PinStore = .init(),
+        boundaryService: BoundaryService = .init(),
+        transformService: FreeTransformService = .init(),
+        geocodingService: GeocodingService = .init()
+    ) {
+        self.store = store
+        self.pinStore = pinStore
+        self.boundaryService = boundaryService
+        self.transformService = transformService
+        self.geocodingService = geocodingService
         savedOverlays = store.loadAll()
         savedPins = pinStore.loadAll()
     }
 
-    func lockOverlay(visibleRegion: GMSVisibleRegion) {
-        guard selectedImage != nil else { return }
+    func lockOverlay() {
+        guard selectedImage != nil,
+              let visibleRegion = currentVisibleRegion else { return }
 
         bakeTransformIfNeeded()
 
@@ -87,19 +102,20 @@ final class MapOverlayViewModel: ObservableObject {
               let sw = lockedSouthWest
         else { return }
 
-        let saved = store.saveOverlay(
-            image: image,
-            name: name,
-            northEastLatitude: ne.latitude,
-            northEastLongitude: ne.longitude,
-            southWestLatitude: sw.latitude,
-            southWestLongitude: sw.longitude,
-            opacity: opacity,
-            rotation: rotation
-        )
-
-        if saved != nil {
+        do {
+            _ = try store.saveOverlay(
+                image: image,
+                name: name,
+                northEastLatitude: ne.latitude,
+                northEastLongitude: ne.longitude,
+                southWestLatitude: sw.latitude,
+                southWestLongitude: sw.longitude,
+                opacity: opacity,
+                rotation: rotation
+            )
             savedOverlays = store.loadAll()
+        } catch {
+            errorMessage = "Failed to save overlay: \(error.localizedDescription)"
         }
     }
 
@@ -123,8 +139,12 @@ final class MapOverlayViewModel: ObservableObject {
     }
 
     func deleteOverlay(_ overlay: SavedOverlay) {
-        store.delete(overlay)
-        savedOverlays = store.loadAll()
+        do {
+            try store.delete(overlay)
+            savedOverlays = store.loadAll()
+        } catch {
+            errorMessage = "Failed to delete overlay: \(error.localizedDescription)"
+        }
     }
 
     // MARK: - Boundary
@@ -137,7 +157,23 @@ final class MapOverlayViewModel: ObservableObject {
         boundaryTask = Task {
             let result = await boundaryService.fetchBoundary(query: query)
             guard !Task.isCancelled else { return }
-            currentBoundary = result
+            switch result {
+            case .success(let boundary):
+                currentBoundary = boundary
+            case .failure(let error):
+                errorMessage = "Boundary fetch failed: \(error)"
+            }
+        }
+    }
+
+    // MARK: - Place search
+
+    func searchPlaces(query: String) async {
+        do {
+            searchResults = try await geocodingService.search(query: query)
+        } catch {
+            searchResults = []
+            errorMessage = "Search failed: \(error.localizedDescription)"
         }
     }
 
@@ -146,16 +182,28 @@ final class MapOverlayViewModel: ObservableObject {
     func addPin(name: String, coordinate: CLLocationCoordinate2D) {
         let pin = SavedPin(name: name, latitude: coordinate.latitude, longitude: coordinate.longitude)
         savedPins.append(pin)
-        pinStore.save(savedPins)
+        do {
+            try pinStore.save(savedPins)
+        } catch {
+            errorMessage = "Failed to save pins: \(error.localizedDescription)"
+        }
     }
 
     func deletePin(_ pin: SavedPin) {
         savedPins.removeAll { $0.id == pin.id }
-        pinStore.save(savedPins)
+        do {
+            try pinStore.save(savedPins)
+        } catch {
+            errorMessage = "Failed to save pins: \(error.localizedDescription)"
+        }
     }
 
     func clearAllPins() {
         savedPins.removeAll()
-        pinStore.save(savedPins)
+        do {
+            try pinStore.save(savedPins)
+        } catch {
+            errorMessage = "Failed to save pins: \(error.localizedDescription)"
+        }
     }
 }

@@ -5,14 +5,27 @@ struct ControlPanelView: View {
     @ObservedObject var viewModel: MapOverlayViewModel
     @State private var showLockedControls = false
     @State private var hideAlignmentPanel = false
+    @State private var showRemoveConfirmation = false
 
     var body: some View {
-        if viewModel.isLocked {
-            lockedView
-        } else if viewModel.selectedImage != nil {
-            alignmentView
-        } else {
-            idleView
+        Group {
+            if viewModel.isLocked {
+                lockedView
+            } else if viewModel.selectedImage != nil {
+                alignmentView
+            } else {
+                idleView
+            }
+        }
+        .animation(.spring(response: 0.3), value: viewModel.isLocked)
+        .confirmationDialog("Remove Overlay?", isPresented: $showRemoveConfirmation, titleVisibility: .visible) {
+            Button("Remove", role: .destructive) {
+                withAnimation { showLockedControls = false }
+                viewModel.removeOverlay()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will remove the current overlay from the map.")
         }
     }
 
@@ -67,9 +80,11 @@ struct ControlPanelView: View {
                                 : nil
                         )
                         circleIcon("lock.fill", tint: .green, accessibilityLabel: "Lock overlay") {
-                            NotificationCenter.default.post(name: .lockOverlayRequested, object: nil)
+                            viewModel.lockOverlay()
                         }
-                        circleIcon("trash", tint: .red, accessibilityLabel: "Remove overlay") { viewModel.removeOverlay() }
+                        circleIcon("trash", tint: .red, accessibilityLabel: "Remove overlay") {
+                            showRemoveConfirmation = true
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 14)
@@ -108,8 +123,7 @@ struct ControlPanelView: View {
                             viewModel.showingSaveDialog = true
                         }
                         circleIcon("trash", tint: .red, isDark: true, accessibilityLabel: "Remove overlay") {
-                            withAnimation { showLockedControls = false }
-                            viewModel.removeOverlay()
+                            showRemoveConfirmation = true
                         }
                     }
                 }
@@ -154,36 +168,34 @@ struct ControlPanelView: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
+    @ViewBuilder
     private func sliderRow(_ icon: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 0, tint: Color, isDark: Bool = false) -> some View {
-        let slider = step > 0
-            ? AnyView(Slider(value: value, in: range, step: step).tint(tint))
-            : AnyView(Slider(value: value, in: range).tint(tint))
-
-        let content = HStack(spacing: isDark ? 8 : 10) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(isDark ? .white.opacity(0.8) : Color.secondary)
-
-            if isDark {
-                slider.frame(width: 140)
+        let slider = Group {
+            if step > 0 {
+                Slider(value: value, in: range, step: step).tint(tint)
             } else {
-                slider
+                Slider(value: value, in: range).tint(tint)
             }
         }
 
         if isDark {
-            return AnyView(
-                content
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(.black.opacity(0.6), in: Capsule())
-            )
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.8))
+                slider.frame(width: 140)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(.black.opacity(0.6), in: Capsule())
         } else {
-            return AnyView(content.padding(.horizontal, 16))
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.secondary)
+                slider
+            }
+            .padding(.horizontal, 16)
         }
     }
-}
-
-extension Notification.Name {
-    static let lockOverlayRequested = Notification.Name("lockOverlayRequested")
 }

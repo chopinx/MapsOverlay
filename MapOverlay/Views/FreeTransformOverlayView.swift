@@ -4,6 +4,7 @@ struct FreeTransformOverlayView: View {
     @ObservedObject var viewModel: MapOverlayViewModel
     let viewSize: CGSize
 
+    private let transformService = FreeTransformService()
     private let handleSize: CGFloat = 28
     private let hitTargetSize: CGFloat = 44
 
@@ -21,12 +22,13 @@ struct FreeTransformOverlayView: View {
     @ViewBuilder
     private var transformedImage: some View {
         if let image = viewModel.selectedImage {
-            let projection = FreeTransformService.projectionTransform(
+            let projection = transformService.projectionTransform(
                 for: viewModel.transformCorners,
                 in: viewSize
             )
             Image(uiImage: image)
                 .resizable()
+                .aspectRatio(contentMode: .fit)
                 .frame(width: viewSize.width, height: viewSize.height)
                 .modifier(FreeTransformEffect(transform: projection))
                 .rotationEffect(.degrees(viewModel.rotation))
@@ -87,6 +89,28 @@ struct FreeTransformOverlayView: View {
 /// Applies a ProjectionTransform without clipping the result to the original frame.
 struct FreeTransformEffect: GeometryEffect {
     var transform: ProjectionTransform
+
+    var animatableData: AnimatablePair<
+        AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, CGFloat>>,
+        AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, CGFloat>>
+    > {
+        get {
+            .init(
+                .init(.init(transform.m11, transform.m12), .init(transform.m13, transform.m21)),
+                .init(.init(transform.m22, transform.m23), .init(transform.m31, transform.m32))
+            )
+        }
+        set {
+            transform.m11 = newValue.first.first.first
+            transform.m12 = newValue.first.first.second
+            transform.m13 = newValue.first.second.first
+            transform.m21 = newValue.first.second.second
+            transform.m22 = newValue.second.first.first
+            transform.m23 = newValue.second.first.second
+            transform.m31 = newValue.second.second.first
+            transform.m32 = newValue.second.second.second
+        }
+    }
 
     func effectValue(size: CGSize) -> ProjectionTransform {
         transform

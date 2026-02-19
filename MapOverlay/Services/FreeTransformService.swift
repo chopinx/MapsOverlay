@@ -17,19 +17,20 @@ struct FreeTransformCorners: Equatable {
     var isIdentity: Bool { self == .identity }
 }
 
-final class FreeTransformService {
+final class FreeTransformService: Sendable {
     private let ciContext: CIContext
 
     init() {
         if let device = MTLCreateSystemDefaultDevice() {
             ciContext = CIContext(mtlDevice: device)
         } else {
+            print("[FreeTransformService] Metal device unavailable, falling back to CPU CIContext")
             ciContext = CIContext()
         }
     }
 
     /// Computes the ProjectionTransform for real-time SwiftUI preview.
-    static func projectionTransform(for corners: FreeTransformCorners, in size: CGSize) -> ProjectionTransform {
+    func projectionTransform(for corners: FreeTransformCorners, in size: CGSize) -> ProjectionTransform {
         let W = size.width
         let H = size.height
         let tl = CGPoint(x: corners.topLeft.x * W, y: corners.topLeft.y * H)
@@ -74,7 +75,7 @@ final class FreeTransformService {
     ///         y' = (dx + ey + f) / (gx + hy + 1)
     ///
     /// SwiftUI uses row-vector convention [x y 1] * M, so the matrix is transposed.
-    private static func homography(
+    private func homography(
         sourceSize: CGSize,
         topLeft tl: CGPoint, topRight tr: CGPoint, bottomRight br: CGPoint, bottomLeft bl: CGPoint
     ) -> ProjectionTransform {

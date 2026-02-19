@@ -32,6 +32,7 @@
 		E02EF61707A5B4A162A3ADDD /* ControlPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD335EA85EF90BBF6EBAE30 /* ControlPanelView.swift */; };
 		F54CAF107ED1F27171C75FA0 /* SavedPinsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD60C7D48529C2F547E37D1 /* SavedPinsView.swift */; };
 		FDAEB4F9758D5499B606F23D /* MapOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3415B467E1C838D518D0AC /* MapOverlayApp.swift */; };
+		C1A2B3D4E5F6071829304152 /* GeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		2668D4E3BD9B32C461886BD6 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		2D81F71BD1163D951771B3E1 /* SavedOverlaysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedOverlaysView.swift; sourceTree = "<group>"; };
 		3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthService.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingService.swift; sourceTree = "<group>"; };
 		437C5835FADF39C0039DAF0E /* FreeTransformOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeTransformOverlayView.swift; sourceTree = "<group>"; };
 		4FD60C7D48529C2F547E37D1 /* SavedPinsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPinsView.swift; sourceTree = "<group>"; };
 		5E86CA8EE550908825F6D80F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 			children = (
 				6E268EA7807D75A05B813788 /* BoundaryService.swift */,
 				1CD51355FD229B8D0C2C4FB1 /* FreeTransformService.swift */,
+				A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */,
 				3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */,
 				9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */,
 				B43E093F238C823E54E0CB2E /* PinStore.swift */,
@@ -245,6 +248,7 @@
 				E02EF61707A5B4A162A3ADDD /* ControlPanelView.swift in Sources */,
 				6EBA14C5A5FA55EA830E4724 /* FreeTransformOverlayView.swift in Sources */,
 				981FEE71B7A491029F6126D1 /* FreeTransformService.swift in Sources */,
+				C1A2B3D4E5F6071829304152 /* GeocodingService.swift in Sources */,
 				11C970B81BD8BA7781EBD26C /* GoogleAuthService.swift in Sources */,
 				124CAD8DC479977B104DC6B4 /* GoogleMapView.swift in Sources */,
 				A50EBAEBE721EAD64F87E6CF /* ImagePicker.swift in Sources */,

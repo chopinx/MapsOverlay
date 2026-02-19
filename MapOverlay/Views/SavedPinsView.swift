@@ -3,6 +3,7 @@ import SwiftUI
 struct SavedPinsView: View {
     @ObservedObject var viewModel: MapOverlayViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var showClearAllConfirmation = false
     var onPinSelected: (SavedPin) -> Void
 
     var body: some View {
@@ -47,10 +48,18 @@ struct SavedPinsView: View {
                 if !viewModel.savedPins.isEmpty {
                     ToolbarItem(placement: .destructiveAction) {
                         Button("Clear All", role: .destructive) {
-                            viewModel.clearAllPins()
+                            showClearAllConfirmation = true
                         }
                     }
                 }
+            }
+            .confirmationDialog("Clear all pins?", isPresented: $showClearAllConfirmation, titleVisibility: .visible) {
+                Button("Clear All", role: .destructive) {
+                    viewModel.clearAllPins()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will remove all saved pins. This action cannot be undone.")
             }
         }
     }

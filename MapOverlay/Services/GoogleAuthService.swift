@@ -5,6 +5,7 @@ import GoogleSignIn
 final class GoogleAuthService: ObservableObject {
     @Published var currentUser: GIDGoogleUser?
     @Published var isSignedIn = false
+    @Published var authError: String?
 
     init() {
         restorePreviousSignIn()
@@ -16,9 +17,14 @@ final class GoogleAuthService: ObservableObject {
         else { return }
 
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { [weak self] result, error in
-            DispatchQueue.main.async {
-                guard error == nil, let user = result?.user else { return }
-                self?.updateUser(user)
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                if let error {
+                    self.authError = error.localizedDescription
+                    return
+                }
+                guard let user = result?.user else { return }
+                self.updateUser(user)
             }
         }
     }
@@ -26,13 +32,19 @@ final class GoogleAuthService: ObservableObject {
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
         updateUser(nil)
+        authError = nil
     }
 
     private func restorePreviousSignIn() {
         GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
-            DispatchQueue.main.async {
-                guard error == nil, let user else { return }
-                self?.updateUser(user)
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                if let error {
+                    self.authError = error.localizedDescription
+                    return
+                }
+                guard let user else { return }
+                self.updateUser(user)
             }
         }
     }

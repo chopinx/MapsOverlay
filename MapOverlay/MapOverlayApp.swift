@@ -19,7 +19,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         if Config.hasAPIKey {
-            GMSServices.provideAPIKey(Config.googleMapsAPIKey)
+            let key = Config.googleMapsAPIKey
+            if !Config.isValidAPIKeyFormat(key) {
+                print("[MapOverlay] Warning: API key does not match expected Google Maps format (AIza...39 chars). Attempting to use it anyway.")
+            }
+            GMSServices.provideAPIKey(key)
+        }
+        if !Config.googleClientID.isEmpty {
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: Config.googleClientID)
         }
         return true
     }

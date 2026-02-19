@@ -5,13 +5,12 @@ import CoreLocation
 struct ContentView: View {
     @StateObject private var viewModel = MapOverlayViewModel()
     @StateObject private var authService = GoogleAuthService()
-    @State private var currentVisibleRegion: GMSVisibleRegion?
     @State private var saveOverlayName = ""
     @State private var showingSettings = false
     @State private var showingSearch = false
     @State private var showingPins = false
     @State private var mapViewID = UUID()
-    @State private var animateTarget: CLLocationCoordinate2D?
+    @State private var lastKnownAPIKey = Config.googleMapsAPIKey
 
     var body: some View {
         Group {
@@ -22,11 +21,22 @@ struct ContentView: View {
                 setupPrompt
             }
         }
-        .sheet(isPresented: $showingSettings) {
+        .sheet(isPresented: $showingSettings, onDismiss: {
+            let currentKey = Config.googleMapsAPIKey
+            if currentKey != lastKnownAPIKey {
+                lastKnownAPIKey = currentKey
+                mapViewID = UUID()
+            }
+        }) {
             SettingsView(authService: authService)
         }
-        .onReceive(NotificationCenter.default.publisher(for: .apiKeyChanged)) { _ in
-            mapViewID = UUID()
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK") { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 
@@ -57,9 +67,9 @@ struct ContentView: View {
             GoogleMapView(
                 viewModel: viewModel,
                 onVisibleRegionChanged: { region in
-                    currentVisibleRegion = region
+                    viewModel.currentVisibleRegion = region
                 },
-                animateToCoordinate: animateTarget
+                animateToCoordinate: viewModel.animateTarget
             )
             .ignoresSafeArea()
 
@@ -88,13 +98,13 @@ struct ContentView: View {
             PlaceSearchView { coordinate, name, query in
                 viewModel.addPin(name: name, coordinate: coordinate)
                 viewModel.fetchBoundary(for: query)
-                animateTarget = coordinate
+                viewModel.animateTarget = coordinate
             }
         }
         .sheet(isPresented: $showingPins) {
             SavedPinsView(viewModel: viewModel) { pin in
                 viewModel.currentBoundary = nil
-                animateTarget = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+                viewModel.animateTarget = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
             }
         }
         .sheet(isPresented: $viewModel.showingImagePicker) {
@@ -114,11 +124,6 @@ struct ContentView: View {
             }
         } message: {
             Text("Give this overlay a name to find it later.")
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .lockOverlayRequested)) { _ in
-            if let region = currentVisibleRegion {
-                viewModel.lockOverlay(visibleRegion: region)
-            }
         }
     }
 

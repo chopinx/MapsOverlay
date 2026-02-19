@@ -14,7 +14,7 @@ struct SignInView: View {
                     authService.signOut()
                 }
             } label: {
-                profileButton(icon: "person.circle.fill", color: .blue)
+                profileButton(icon: "person.circle.fill", color: .primary)
             }
             .accessibilityLabel("Google account")
         } else {
@@ -31,7 +31,7 @@ struct SignInView: View {
         Image(systemName: icon)
             .font(.body)
             .foregroundColor(color)
-            .frame(width: 44, height: 44)
+            .frame(minWidth: 44, minHeight: 44)
             .background(.ultraThinMaterial, in: Circle())
             .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
     }

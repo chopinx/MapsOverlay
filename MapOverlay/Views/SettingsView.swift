@@ -14,6 +14,25 @@ struct SettingsView: View {
                         .textContentType(.none)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+
+                    if !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        let trimmed = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+                        HStack(spacing: 6) {
+                            if Config.isValidAPIKeyFormat(trimmed) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                Text("Valid API key format")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            } else {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                                Text("Invalid API key format (expected AIza... 39 characters)")
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
                 } header: {
                     Text("Google Maps")
                 } footer: {
@@ -63,7 +82,6 @@ struct SettingsView: View {
                             if !trimmed.isEmpty {
                                 GMSServices.provideAPIKey(trimmed)
                             }
-                            NotificationCenter.default.post(name: .apiKeyChanged, object: nil)
                         }
                         dismiss()
                     }
@@ -71,8 +89,4 @@ struct SettingsView: View {
             }
         }
     }
-}
-
-extension Notification.Name {
-    static let apiKeyChanged = Notification.Name("apiKeyChanged")
 }

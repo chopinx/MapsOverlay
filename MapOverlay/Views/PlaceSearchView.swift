@@ -6,7 +6,8 @@ struct PlaceSearchView: View {
     @State private var query = ""
     @State private var results: [SearchResult] = []
     @State private var isSearching = false
-    @State private var geocoder = CLGeocoder()
+    @State private var errorMessage: String?
+    private let geocodingService = GeocodingService()
     var onPlaceSelected: (CLLocationCoordinate2D, String, String) -> Void
 
     var body: some View {
@@ -18,6 +19,9 @@ struct PlaceSearchView: View {
                         ProgressView()
                         Spacer()
                     }
+                } else if let errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
                 } else if results.isEmpty && !query.isEmpty {
                     Text("No results found")
                         .foregroundColor(.secondary)
@@ -45,7 +49,10 @@ struct PlaceSearchView: View {
             .searchable(text: $query, prompt: "Search places")
             .onSubmit(of: .search) { search() }
             .onChange(of: query) { _, newValue in
-                if newValue.isEmpty { results = [] }
+                if newValue.isEmpty {
+                    results = []
+                    errorMessage = nil
+                }
             }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
@@ -60,35 +67,18 @@ struct PlaceSearchView: View {
     private func search() {
         guard !query.isEmpty else { return }
         isSearching = true
-        geocoder.cancelGeocode()
-        geocoder.geocodeAddressString(query) { placemarks, _ in
-            DispatchQueue.main.async {
+        errorMessage = nil
+        Task {
+            do {
+                results = try await geocodingService.search(query: query)
                 isSearching = false
-                results = (placemarks ?? []).compactMap { placemark in
-                    guard let location = placemark.location else { return nil }
-
-                    let name = [placemark.name, placemark.locality]
-                        .compactMap { $0 }
-                        .joined(separator: ", ")
-
-                    let detail = [placemark.administrativeArea, placemark.country]
-                        .compactMap { $0 }
-                        .joined(separator: ", ")
-
-                    return SearchResult(
-                        name: name.isEmpty ? "Unknown" : name,
-                        detail: detail.isEmpty ? nil : detail,
-                        coordinate: location.coordinate
-                    )
-                }
+            } catch let error as CLError where error.code == .network {
+                errorMessage = "Network error. Check your connection and try again."
+                isSearching = false
+            } catch {
+                errorMessage = "Search failed: \(error.localizedDescription)"
+                isSearching = false
             }
         }
     }
-}
-
-private struct SearchResult: Identifiable {
-    let id = UUID()
-    let name: String
-    let detail: String?
-    let coordinate: CLLocationCoordinate2D
 }
