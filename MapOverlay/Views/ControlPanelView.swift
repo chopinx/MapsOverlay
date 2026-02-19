@@ -1,6 +1,22 @@
 import SwiftUI
 import Foundation
 
+private enum Layout {
+    static let edgePadding: CGFloat = 16
+    static let buttonSize: CGFloat = 44
+    static let buttonSpacing: CGFloat = 10
+    static let panelCornerRadius: CGFloat = 16
+    static let panelMaxWidth: CGFloat = 280
+    static let panelInnerPadding: CGFloat = 14
+    static let panelShadowOpacity: CGFloat = 0.15
+    static let panelShadowRadius: CGFloat = 8
+    static let handleWidth: CGFloat = 36
+    static let handleHeight: CGFloat = 5
+    static let darkBackgroundOpacity: CGFloat = 0.6
+    static let sliderWidth: CGFloat = 140
+    static let transformRingSize: CGFloat = 48
+}
+
 struct ControlPanelView: View {
     @ObservedObject var viewModel: MapOverlayViewModel
     @State private var showLockedControls = false
@@ -32,13 +48,11 @@ struct ControlPanelView: View {
     // MARK: - Idle
 
     private var idleView: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Layout.buttonSpacing) {
             circleIcon("photo.on.rectangle", accessibilityLabel: "Import image") { viewModel.showingImagePicker = true }
             circleIcon("bookmark", accessibilityLabel: "Saved overlays") { viewModel.showingSavedOverlays = true }
         }
-        .padding(.bottom, 24)
-        .padding(.leading, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .leadingAligned()
     }
 
     // MARK: - Alignment
@@ -49,8 +63,8 @@ struct ControlPanelView: View {
                 VStack(spacing: 12) {
                     Capsule()
                         .fill(Color.secondary.opacity(0.4))
-                        .frame(width: 36, height: 5)
-                        .padding(.top, 10)
+                        .frame(width: Layout.handleWidth, height: Layout.handleHeight)
+                        .padding(.top, Layout.buttonSpacing)
 
                     sliderRow("circle.lefthalf.filled", value: $viewModel.opacity, range: 0.05...1.0, tint: .blue)
                         .accessibilityLabel("Opacity")
@@ -63,10 +77,10 @@ struct ControlPanelView: View {
                                 .font(.caption.bold())
                                 .foregroundColor(.purple)
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, Layout.edgePadding)
                     }
 
-                    HStack(spacing: 10) {
+                    HStack(spacing: Layout.buttonSpacing) {
                         circleIcon(
                             "skew",
                             tint: viewModel.isTransformMode ? .purple : .blue,
@@ -76,7 +90,7 @@ struct ControlPanelView: View {
                         }
                         .overlay(
                             viewModel.isTransformMode
-                                ? Circle().stroke(Color.purple, lineWidth: 2).frame(width: 48, height: 48)
+                                ? Circle().stroke(Color.purple, lineWidth: 2).frame(width: Layout.transformRingSize, height: Layout.transformRingSize)
                                 : nil
                         )
                         circleIcon("lock.fill", tint: .green, accessibilityLabel: "Lock overlay") {
@@ -86,29 +100,30 @@ struct ControlPanelView: View {
                             showRemoveConfirmation = true
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                    .padding(.horizontal, Layout.edgePadding)
+                    .padding(.bottom, Layout.panelInnerPadding)
                 }
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-                .padding(.horizontal, 8)
-                .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+                .frame(maxWidth: Layout.panelMaxWidth)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Layout.panelCornerRadius))
+                .padding(.leading, Layout.edgePadding / 2)
+                .shadow(color: .black.opacity(Layout.panelShadowOpacity), radius: Layout.panelShadowRadius, y: 2)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             toggleButton(icon: hideAlignmentPanel ? "slider.horizontal.3" : "chevron.down", accessibilityLabel: hideAlignmentPanel ? "Show controls" : "Hide controls") {
                 hideAlignmentPanel.toggle()
             }
-            .padding(.leading, 16)
+            .padding(.leading, Layout.edgePadding)
         }
-        .padding(.bottom, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Locked
 
     private var lockedView: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Layout.buttonSpacing) {
             if showLockedControls {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: Layout.buttonSpacing) {
                     sliderRow("circle.lefthalf.filled", value: $viewModel.opacity, range: 0.05...1.0, tint: .white, isDark: true)
                         .accessibilityLabel("Opacity")
                     sliderRow("rotate.right", value: $viewModel.rotation, range: -180...180, step: 1, tint: .orange, isDark: true)
@@ -134,9 +149,7 @@ struct ControlPanelView: View {
                 showLockedControls.toggle()
             }
         }
-        .padding(.bottom, 24)
-        .padding(.leading, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .leadingAligned()
     }
 
     // MARK: - Components
@@ -146,9 +159,9 @@ struct ControlPanelView: View {
             Image(systemName: icon)
                 .font(.body)
                 .foregroundStyle(tint)
-                .frame(width: 44, height: 44)
+                .frame(width: Layout.buttonSize, height: Layout.buttonSize)
                 .background(
-                    isDark ? AnyShapeStyle(.black.opacity(0.6)) : AnyShapeStyle(tint.opacity(0.15)),
+                    isDark ? AnyShapeStyle(.black.opacity(Layout.darkBackgroundOpacity)) : AnyShapeStyle(tint.opacity(0.15)),
                     in: Circle()
                 )
         }
@@ -162,8 +175,8 @@ struct ControlPanelView: View {
             Image(systemName: icon)
                 .font(.body.bold())
                 .foregroundColor(.white)
-                .frame(width: 44, height: 44)
-                .background(.black.opacity(0.6), in: Circle())
+                .frame(width: Layout.buttonSize, height: Layout.buttonSize)
+                .background(.black.opacity(Layout.darkBackgroundOpacity), in: Circle())
         }
         .accessibilityLabel(accessibilityLabel)
     }
@@ -183,19 +196,29 @@ struct ControlPanelView: View {
                 Image(systemName: icon)
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.8))
-                slider.frame(width: 140)
+                slider.frame(width: Layout.sliderWidth)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(.black.opacity(0.6), in: Capsule())
+            .padding(.horizontal, Layout.panelInnerPadding)
+            .padding(.vertical, Layout.buttonSpacing)
+            .background(.black.opacity(Layout.darkBackgroundOpacity), in: Capsule())
         } else {
-            HStack(spacing: 10) {
+            HStack(spacing: Layout.buttonSpacing) {
                 Image(systemName: icon)
                     .font(.subheadline)
                     .foregroundStyle(Color.secondary)
                 slider
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Layout.edgePadding)
         }
+    }
+}
+
+// MARK: - View Extension
+
+private extension View {
+    func leadingAligned() -> some View {
+        self
+            .padding(.leading, Layout.edgePadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

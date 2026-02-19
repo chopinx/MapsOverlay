@@ -30,3 +30,14 @@ targets:
         product: GoogleSignIn
       - package: GoogleSignIn
         product: GoogleSignInSwift
+  MapOverlayTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - MapOverlayTests
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: "YES"
+    dependencies:
+      - target: MapOverlay

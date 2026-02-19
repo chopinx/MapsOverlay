@@ -8,7 +8,6 @@ struct OverlayImageView: View {
     var body: some View {
         Image(uiImage: image)
             .resizable()
-            .aspectRatio(contentMode: .fit)
             .rotationEffect(.degrees(rotation))
             .opacity(opacity)
             .allowsHitTesting(false)

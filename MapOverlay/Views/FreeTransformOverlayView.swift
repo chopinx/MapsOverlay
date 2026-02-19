@@ -28,7 +28,6 @@ struct FreeTransformOverlayView: View {
             )
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
                 .frame(width: viewSize.width, height: viewSize.height)
                 .modifier(FreeTransformEffect(transform: projection))
                 .rotationEffect(.degrees(viewModel.rotation))

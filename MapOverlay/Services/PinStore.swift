@@ -2,11 +2,18 @@ import Foundation
 
 final class PinStore {
     private let fileManager = FileManager.default
+    private let fileURL: URL
 
-    private var storeURL: URL {
-        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return docs.appendingPathComponent("saved_pins.json")
+    init(storeURL: URL? = nil) {
+        if let storeURL {
+            self.fileURL = storeURL
+        } else {
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            self.fileURL = docs.appendingPathComponent("saved_pins.json")
+        }
     }
+
+    private var storeURL: URL { fileURL }
 
     func loadAll() -> [SavedPin] {
         guard let data = try? Data(contentsOf: storeURL) else { return [] }

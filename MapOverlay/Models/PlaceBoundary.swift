@@ -1,4 +1,11 @@
 import CoreLocation
+import Foundation
+
+enum BoundaryError: Error {
+    case networkError(underlying: Error)
+    case parseError
+    case noResults
+}
 
 struct BoundaryPolygon: Equatable {
     let outer: [CLLocationCoordinate2D]

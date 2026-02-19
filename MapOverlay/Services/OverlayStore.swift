@@ -2,13 +2,19 @@ import UIKit
 
 final class OverlayStore {
     private let fileManager = FileManager.default
+    private let directory: URL
 
-    private lazy var overlaysDirectory: URL = {
-        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dir = docs.appendingPathComponent("overlays", isDirectory: true)
-        try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
-    }()
+    init(directory: URL? = nil) {
+        if let directory {
+            self.directory = directory
+        } else {
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            self.directory = docs.appendingPathComponent("overlays", isDirectory: true)
+        }
+        try? FileManager.default.createDirectory(at: self.directory, withIntermediateDirectories: true)
+    }
+
+    private var overlaysDirectory: URL { directory }
 
     private var metadataURL: URL {
         overlaysDirectory.appendingPathComponent("metadata.json")

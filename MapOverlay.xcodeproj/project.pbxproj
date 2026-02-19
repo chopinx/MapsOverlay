@@ -7,44 +7,69 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01E9BF6AD1FD255153819ECF /* ConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4506CFE45404742981495A5 /* ConfigTests.swift */; };
 		0AE9B13E625F5B5E6DFE52D5 /* OverlayImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E2C426876D5B448313373C /* OverlayImageView.swift */; };
+		0CCA20CCB98B408025958AF0 /* GeocodingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD2AA34C0E9AFBA3E34D7A75 /* GeocodingServiceTests.swift */; };
 		11616E6610C3447B92F94250 /* MapOverlayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767AA3F00F34CFDFDB9404AE /* MapOverlayViewModel.swift */; };
 		11C970B81BD8BA7781EBD26C /* GoogleAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */; };
 		124CAD8DC479977B104DC6B4 /* GoogleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727D623CE3169099D6250A26 /* GoogleMapView.swift */; };
+		1F0167BC1EEB61503F8C34F6 /* PinStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0879407EE003D88D860EE8 /* PinStoreTests.swift */; };
 		2139B40BBA20BFE12F6F91F9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5E86CA8EE550908825F6D80F /* Assets.xcassets */; };
 		24ABE1D20B0461A4963FE8D9 /* OverlayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */; };
+		344398B717654DFAE521A895 /* SavedPinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FCB33B07E764A755DDFC6DF /* SavedPinTests.swift */; };
+		419C3038C0A8170409494B97 /* OverlayStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5087E3AE8FFE0048A4219 /* OverlayStoreTests.swift */; };
+		4413428BAD5B75B2C9DBEC0C /* FreeTransformServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F3452919135496B3FD8509 /* FreeTransformServiceTests.swift */; };
 		4A79C12C5390D6F9F1F9D988 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81ACA6D7FA606B2D3D501CB6 /* SettingsView.swift */; };
+		4E29BFCFF4EDEE7395F156E6 /* PlaceBoundary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0AB34D1B9412264DE57FF7 /* PlaceBoundary.swift */; };
 		56C8BD16F693986182A1E54A /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = 383CE95DDBB983D45D729C09 /* GoogleMaps */; };
 		57BAF4E873FB572249A5598F /* BoundaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E268EA7807D75A05B813788 /* BoundaryService.swift */; };
+		5A4010601573ED1F0DAE1FAA /* SavedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CCAF2BB4E83B3CF11D8D4 /* SavedOverlayTests.swift */; };
 		5F7183A890F8FE2C477502FB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4DAAB1A3DAE3C6467EEA446 /* ContentView.swift */; };
+		5F93084B8C01599227C03ADB /* GeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B13456FC615F6056751A413 /* GeocodingService.swift */; };
 		6EBA14C5A5FA55EA830E4724 /* FreeTransformOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437C5835FADF39C0039DAF0E /* FreeTransformOverlayView.swift */; };
 		71D881E6F8E17136E1718D1C /* SavedOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1568FE63DD3B7DA6CF833C /* SavedOverlay.swift */; };
 		72FC6CF21B1DEE7F539874BE /* PlaceSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059798B211A81E21D69ECEF6 /* PlaceSearchView.swift */; };
+		7F9437B00187A44BBD74AA23 /* BoundaryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A084FCB24B8ABB8C343292 /* BoundaryServiceTests.swift */; };
 		9344FF5082DC473921B663C3 /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B43E093F238C823E54E0CB2E /* PinStore.swift */; };
 		981FEE71B7A491029F6126D1 /* FreeTransformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CD51355FD229B8D0C2C4FB1 /* FreeTransformService.swift */; };
 		988027038B46EB4EB5D9CD60 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 999A0CF5C5E820EAFD90B174 /* Config.swift */; };
 		A50EBAEBE721EAD64F87E6CF /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2668D4E3BD9B32C461886BD6 /* ImagePicker.swift */; };
+		A556B8D01921E0D82C8D6C96 /* FreeTransformCornersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8E3F97496F35BD3CDA8DFF /* FreeTransformCornersTests.swift */; };
 		A7E44B167D3723A757F4F4E7 /* SavedOverlaysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D81F71BD1163D951771B3E1 /* SavedOverlaysView.swift */; };
 		ADB0BDE751EC393841AE77C4 /* SavedPin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F71EC15B07CF1566231BC214 /* SavedPin.swift */; };
 		B7D7C4A6B2F5B88884D80562 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB374600FC48C10D46FF52E7 /* SignInView.swift */; };
 		BE33370A6DD20170D90DEAC2 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 91C4BA1EB1F5B85FCD8A79C0 /* GoogleSignInSwift */; };
 		D5A683C407FA60135CB6936E /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B86331A6AF7CB3D0C22EA560 /* GoogleSignIn */; };
 		E02EF61707A5B4A162A3ADDD /* ControlPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD335EA85EF90BBF6EBAE30 /* ControlPanelView.swift */; };
+		E04846877ADA13069DE377AD /* MapOverlayViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E7735458287BB6ACC6D1DC /* MapOverlayViewModelTests.swift */; };
 		F54CAF107ED1F27171C75FA0 /* SavedPinsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD60C7D48529C2F547E37D1 /* SavedPinsView.swift */; };
 		FDAEB4F9758D5499B606F23D /* MapOverlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3415B467E1C838D518D0AC /* MapOverlayApp.swift */; };
-		C1A2B3D4E5F6071829304152 /* GeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7046909D870C9F615BF6E063 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA407A1318C00C9DF3635149 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EED5923EBC9E614B6CAC70CD;
+			remoteInfo = MapOverlay;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		059798B211A81E21D69ECEF6 /* PlaceSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchView.swift; sourceTree = "<group>"; };
 		1CD51355FD229B8D0C2C4FB1 /* FreeTransformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeTransformService.swift; sourceTree = "<group>"; };
 		2668D4E3BD9B32C461886BD6 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		29E7735458287BB6ACC6D1DC /* MapOverlayViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapOverlayViewModelTests.swift; sourceTree = "<group>"; };
 		2D81F71BD1163D951771B3E1 /* SavedOverlaysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedOverlaysView.swift; sourceTree = "<group>"; };
 		3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthService.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingService.swift; sourceTree = "<group>"; };
+		3FCB33B07E764A755DDFC6DF /* SavedPinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPinTests.swift; sourceTree = "<group>"; };
+		4306D3EC0AC4C8EF9D03803F /* MapOverlayTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MapOverlayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		437C5835FADF39C0039DAF0E /* FreeTransformOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeTransformOverlayView.swift; sourceTree = "<group>"; };
 		4FD60C7D48529C2F547E37D1 /* SavedPinsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPinsView.swift; sourceTree = "<group>"; };
+		5B13456FC615F6056751A413 /* GeocodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingService.swift; sourceTree = "<group>"; };
 		5E86CA8EE550908825F6D80F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		68F3452919135496B3FD8509 /* FreeTransformServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeTransformServiceTests.swift; sourceTree = "<group>"; };
 		6E268EA7807D75A05B813788 /* BoundaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundaryService.swift; sourceTree = "<group>"; };
 		727D623CE3169099D6250A26 /* GoogleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleMapView.swift; sourceTree = "<group>"; };
 		767AA3F00F34CFDFDB9404AE /* MapOverlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapOverlayViewModel.swift; sourceTree = "<group>"; };
@@ -52,14 +77,22 @@
 		81ACA6D7FA606B2D3D501CB6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		96E2C426876D5B448313373C /* OverlayImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayImageView.swift; sourceTree = "<group>"; };
 		999A0CF5C5E820EAFD90B174 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		9D0879407EE003D88D860EE8 /* PinStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinStoreTests.swift; sourceTree = "<group>"; };
 		9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayStore.swift; sourceTree = "<group>"; };
 		A4DAAB1A3DAE3C6467EEA446 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AB374600FC48C10D46FF52E7 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		AFD335EA85EF90BBF6EBAE30 /* ControlPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlPanelView.swift; sourceTree = "<group>"; };
 		B43E093F238C823E54E0CB2E /* PinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinStore.swift; sourceTree = "<group>"; };
+		CD2AA34C0E9AFBA3E34D7A75 /* GeocodingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingServiceTests.swift; sourceTree = "<group>"; };
+		D0C5087E3AE8FFE0048A4219 /* OverlayStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayStoreTests.swift; sourceTree = "<group>"; };
+		D4506CFE45404742981495A5 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
+		E13CCAF2BB4E83B3CF11D8D4 /* SavedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedOverlayTests.swift; sourceTree = "<group>"; };
 		EA04D0DB70FD98294B81F669 /* MapOverlay.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MapOverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2A084FCB24B8ABB8C343292 /* BoundaryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundaryServiceTests.swift; sourceTree = "<group>"; };
 		F6B9461CC1CC6E80CFC6169F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F71EC15B07CF1566231BC214 /* SavedPin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPin.swift; sourceTree = "<group>"; };
+		FA0AB34D1B9412264DE57FF7 /* PlaceBoundary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceBoundary.swift; sourceTree = "<group>"; };
+		FB8E3F97496F35BD3CDA8DFF /* FreeTransformCornersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeTransformCornersTests.swift; sourceTree = "<group>"; };
 		FE1568FE63DD3B7DA6CF833C /* SavedOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,8 +123,26 @@
 			isa = PBXGroup;
 			children = (
 				5215534E7CA23671E2FBF8CC /* MapOverlay */,
+				2E0DE2804EE9B7770F52DF26 /* MapOverlayTests */,
 				F7247DDE3792CD2430B84844 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		2E0DE2804EE9B7770F52DF26 /* MapOverlayTests */ = {
+			isa = PBXGroup;
+			children = (
+				F2A084FCB24B8ABB8C343292 /* BoundaryServiceTests.swift */,
+				D4506CFE45404742981495A5 /* ConfigTests.swift */,
+				FB8E3F97496F35BD3CDA8DFF /* FreeTransformCornersTests.swift */,
+				68F3452919135496B3FD8509 /* FreeTransformServiceTests.swift */,
+				CD2AA34C0E9AFBA3E34D7A75 /* GeocodingServiceTests.swift */,
+				29E7735458287BB6ACC6D1DC /* MapOverlayViewModelTests.swift */,
+				D0C5087E3AE8FFE0048A4219 /* OverlayStoreTests.swift */,
+				9D0879407EE003D88D860EE8 /* PinStoreTests.swift */,
+				E13CCAF2BB4E83B3CF11D8D4 /* SavedOverlayTests.swift */,
+				3FCB33B07E764A755DDFC6DF /* SavedPinTests.swift */,
+			);
+			path = MapOverlayTests;
 			sourceTree = "<group>";
 		};
 		5215534E7CA23671E2FBF8CC /* MapOverlay */ = {
@@ -111,6 +162,7 @@
 		8EE2BD3D782D9E83C984411A /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				FA0AB34D1B9412264DE57FF7 /* PlaceBoundary.swift */,
 				FE1568FE63DD3B7DA6CF833C /* SavedOverlay.swift */,
 				F71EC15B07CF1566231BC214 /* SavedPin.swift */,
 			);
@@ -148,7 +200,7 @@
 			children = (
 				6E268EA7807D75A05B813788 /* BoundaryService.swift */,
 				1CD51355FD229B8D0C2C4FB1 /* FreeTransformService.swift */,
-				A1B2C3D4E5F60718293A4B5C /* GeocodingService.swift */,
+				5B13456FC615F6056751A413 /* GeocodingService.swift */,
 				3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */,
 				9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */,
 				B43E093F238C823E54E0CB2E /* PinStore.swift */,
@@ -160,6 +212,7 @@
 			isa = PBXGroup;
 			children = (
 				EA04D0DB70FD98294B81F669 /* MapOverlay.app */,
+				4306D3EC0AC4C8EF9D03803F /* MapOverlayTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -167,6 +220,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0A8A8CD73DF88602DA185F52 /* MapOverlayTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C907927307EE603E640853C9 /* Build configuration list for PBXNativeTarget "MapOverlayTests" */;
+			buildPhases = (
+				48F45A35DD1703F38BB5FFAA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				13FD1ED09B45BC8CDE89D602 /* PBXTargetDependency */,
+			);
+			name = MapOverlayTests;
+			packageProductDependencies = (
+			);
+			productName = MapOverlayTests;
+			productReference = 4306D3EC0AC4C8EF9D03803F /* MapOverlayTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		EED5923EBC9E614B6CAC70CD /* MapOverlay */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5262D894C9CED45A55D72AD2 /* Build configuration list for PBXNativeTarget "MapOverlay" */;
@@ -222,6 +293,7 @@
 			projectRoot = "";
 			targets = (
 				EED5923EBC9E614B6CAC70CD /* MapOverlay */,
+				0A8A8CD73DF88602DA185F52 /* MapOverlayTests */,
 			);
 		};
 /* End PBXProject section */
@@ -238,6 +310,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		48F45A35DD1703F38BB5FFAA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F9437B00187A44BBD74AA23 /* BoundaryServiceTests.swift in Sources */,
+				01E9BF6AD1FD255153819ECF /* ConfigTests.swift in Sources */,
+				A556B8D01921E0D82C8D6C96 /* FreeTransformCornersTests.swift in Sources */,
+				4413428BAD5B75B2C9DBEC0C /* FreeTransformServiceTests.swift in Sources */,
+				0CCA20CCB98B408025958AF0 /* GeocodingServiceTests.swift in Sources */,
+				E04846877ADA13069DE377AD /* MapOverlayViewModelTests.swift in Sources */,
+				419C3038C0A8170409494B97 /* OverlayStoreTests.swift in Sources */,
+				1F0167BC1EEB61503F8C34F6 /* PinStoreTests.swift in Sources */,
+				5A4010601573ED1F0DAE1FAA /* SavedOverlayTests.swift in Sources */,
+				344398B717654DFAE521A895 /* SavedPinTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6030D6B285939FAD5B974D50 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -248,7 +337,7 @@
 				E02EF61707A5B4A162A3ADDD /* ControlPanelView.swift in Sources */,
 				6EBA14C5A5FA55EA830E4724 /* FreeTransformOverlayView.swift in Sources */,
 				981FEE71B7A491029F6126D1 /* FreeTransformService.swift in Sources */,
-				C1A2B3D4E5F6071829304152 /* GeocodingService.swift in Sources */,
+				5F93084B8C01599227C03ADB /* GeocodingService.swift in Sources */,
 				11C970B81BD8BA7781EBD26C /* GoogleAuthService.swift in Sources */,
 				124CAD8DC479977B104DC6B4 /* GoogleMapView.swift in Sources */,
 				A50EBAEBE721EAD64F87E6CF /* ImagePicker.swift in Sources */,
@@ -257,6 +346,7 @@
 				0AE9B13E625F5B5E6DFE52D5 /* OverlayImageView.swift in Sources */,
 				24ABE1D20B0461A4963FE8D9 /* OverlayStore.swift in Sources */,
 				9344FF5082DC473921B663C3 /* PinStore.swift in Sources */,
+				4E29BFCFF4EDEE7395F156E6 /* PlaceBoundary.swift in Sources */,
 				72FC6CF21B1DEE7F539874BE /* PlaceSearchView.swift in Sources */,
 				71D881E6F8E17136E1718D1C /* SavedOverlay.swift in Sources */,
 				A7E44B167D3723A757F4F4E7 /* SavedOverlaysView.swift in Sources */,
@@ -269,7 +359,33 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		13FD1ED09B45BC8CDE89D602 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EED5923EBC9E614B6CAC70CD /* MapOverlay */;
+			targetProxy = 7046909D870C9F615BF6E063 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		592C32202AE0A100E21CCD33 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.qinbang.MapOverlayTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MapOverlay.app/MapOverlay";
+			};
+			name = Release;
+		};
 		695A4906EE911CC4FD4C3AE7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -287,6 +403,24 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6AC81ACF28788B944C7BBBA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.qinbang.MapOverlayTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MapOverlay.app/MapOverlay";
 			};
 			name = Debug;
 		};
@@ -446,6 +580,15 @@
 			buildConfigurations = (
 				B1CBD32B52DF7105F3062EC4 /* Debug */,
 				7813A060816251254727C7F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C907927307EE603E640853C9 /* Build configuration list for PBXNativeTarget "MapOverlayTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6AC81ACF28788B944C7BBBA7 /* Debug */,
+				592C32202AE0A100E21CCD33 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

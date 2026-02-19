@@ -2,6 +2,16 @@ import SwiftUI
 import GoogleMaps
 import CoreLocation
 
+private enum Layout {
+    static let floatingControlInset: CGFloat = 8
+    static let edgePadding: CGFloat = 16
+    static let buttonSpacing: CGFloat = 10
+    static let buttonSize: CGFloat = 44
+    static let shadowOpacity: CGFloat = 0.1
+    static let shadowRadius: CGFloat = 4
+    static let shadowOffsetY: CGFloat = 2
+}
+
 struct ContentView: View {
     @StateObject private var viewModel = MapOverlayViewModel()
     @StateObject private var authService = GoogleAuthService()
@@ -63,36 +73,41 @@ struct ContentView: View {
     }
 
     private var mapView: some View {
-        ZStack {
-            GoogleMapView(
-                viewModel: viewModel,
-                onVisibleRegionChanged: { region in
-                    viewModel.currentVisibleRegion = region
-                },
-                animateToCoordinate: viewModel.animateTarget
-            )
-            .ignoresSafeArea()
-
-            if let image = viewModel.selectedImage, !viewModel.isLocked {
-                GeometryReader { geometry in
-                    if viewModel.isTransformMode || !viewModel.transformCorners.isIdentity {
-                        FreeTransformOverlayView(viewModel: viewModel, viewSize: geometry.size)
-                    } else {
-                        OverlayImageView(image: image, opacity: viewModel.opacity, rotation: viewModel.rotation)
-                            .allowsHitTesting(false)
-                    }
-                }
+        GeometryReader { geo in
+            ZStack {
+                GoogleMapView(
+                    viewModel: viewModel,
+                    onVisibleRegionChanged: { region in
+                        viewModel.currentVisibleRegion = region
+                    },
+                    animateToCoordinate: viewModel.animateTarget
+                )
                 .ignoresSafeArea()
-            }
 
-            // Control panel (collapses when locked)
-            VStack {
-                Spacer()
-                ControlPanelView(viewModel: viewModel)
+                if let image = viewModel.selectedImage, !viewModel.isLocked {
+                    GeometryReader { geometry in
+                        if viewModel.isTransformMode || !viewModel.transformCorners.isIdentity {
+                            FreeTransformOverlayView(viewModel: viewModel, viewSize: geometry.size)
+                        } else {
+                            OverlayImageView(image: image, opacity: viewModel.opacity, rotation: viewModel.rotation)
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .ignoresSafeArea()
+                }
+
+                VStack {
+                    topBar
+                        .padding(.top, geo.safeAreaInsets.top + Layout.floatingControlInset)
+
+                    Spacer()
+
+                    ControlPanelView(viewModel: viewModel)
+                        .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? geo.safeAreaInsets.bottom : Layout.floatingControlInset)
+                }
             }
-        }
-        .overlay(alignment: .topLeading) {
-            topBar
+            .ignoresSafeArea()
         }
         .sheet(isPresented: $showingSearch) {
             PlaceSearchView { coordinate, name, query in
@@ -128,7 +143,7 @@ struct ContentView: View {
     }
 
     private var topBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Layout.buttonSpacing) {
             circleButton(icon: "magnifyingglass", accessibilityLabel: "Search places") {
                 showingSearch = true
             }
@@ -140,8 +155,8 @@ struct ContentView: View {
             }
             SignInView(authService: authService)
         }
-        .padding(.leading, 16)
-        .padding(.top, 12)
+        .padding(.leading, Layout.edgePadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func circleButton(
@@ -153,9 +168,9 @@ struct ContentView: View {
             Image(systemName: icon)
                 .font(.body)
                 .foregroundColor(.primary)
-                .frame(width: 44, height: 44)
+                .frame(width: Layout.buttonSize, height: Layout.buttonSize)
                 .background(.ultraThinMaterial, in: Circle())
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                .shadow(color: .black.opacity(Layout.shadowOpacity), radius: Layout.shadowRadius, y: Layout.shadowOffsetY)
         }
         .accessibilityLabel(accessibilityLabel)
     }
