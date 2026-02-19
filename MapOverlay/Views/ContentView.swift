@@ -86,10 +86,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingPins) {
             SavedPinsView(viewModel: viewModel) { pin in
-                animateTarget = CLLocationCoordinate2D(
-                    latitude: pin.latitude,
-                    longitude: pin.longitude
-                )
+                animateTarget = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
             }
         }
         .sheet(isPresented: $viewModel.showingImagePicker) {
@@ -119,13 +116,13 @@ struct ContentView: View {
 
     private var topBar: some View {
         HStack(spacing: 10) {
-            circleButton(icon: "magnifyingglass") {
+            circleButton(icon: "magnifyingglass", accessibilityLabel: "Search places") {
                 showingSearch = true
             }
-            circleButton(icon: "mappin.and.ellipse") {
+            circleButton(icon: "mappin.and.ellipse", accessibilityLabel: "Saved pins") {
                 showingPins = true
             }
-            circleButton(icon: "gearshape") {
+            circleButton(icon: "gearshape", accessibilityLabel: "Settings") {
                 showingSettings = true
             }
             SignInView(authService: authService)
@@ -136,15 +133,17 @@ struct ContentView: View {
 
     private func circleButton(
         icon: String,
+        accessibilityLabel: String = "",
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.body)
                 .foregroundColor(.primary)
-                .frame(width: 40, height: 40)
+                .frame(width: 44, height: 44)
                 .background(.ultraThinMaterial, in: Circle())
                 .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
         }
+        .accessibilityLabel(accessibilityLabel)
     }
 }

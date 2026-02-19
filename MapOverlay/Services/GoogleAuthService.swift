@@ -16,23 +16,29 @@ final class GoogleAuthService: ObservableObject {
         else { return }
 
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { [weak self] result, error in
-            guard error == nil, let user = result?.user else { return }
-            self?.currentUser = user
-            self?.isSignedIn = true
+            DispatchQueue.main.async {
+                guard error == nil, let user = result?.user else { return }
+                self?.updateUser(user)
+            }
         }
     }
 
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
-        currentUser = nil
-        isSignedIn = false
+        updateUser(nil)
     }
 
     private func restorePreviousSignIn() {
         GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
-            guard error == nil, let user else { return }
-            self?.currentUser = user
-            self?.isSignedIn = true
+            DispatchQueue.main.async {
+                guard error == nil, let user else { return }
+                self?.updateUser(user)
+            }
         }
+    }
+
+    private func updateUser(_ user: GIDGoogleUser?) {
+        currentUser = user
+        isSignedIn = user != nil
     }
 }

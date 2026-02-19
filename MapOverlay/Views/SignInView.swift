@@ -14,24 +14,25 @@ struct SignInView: View {
                     authService.signOut()
                 }
             } label: {
-                Image(systemName: "person.circle.fill")
-                    .font(.body)
-                    .foregroundColor(.blue)
-                    .frame(width: 40, height: 40)
-                    .background(.ultraThinMaterial, in: Circle())
-                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                profileButton(icon: "person.circle.fill", color: .blue)
             }
+            .accessibilityLabel("Google account")
         } else {
             Button {
                 authService.signIn()
             } label: {
-                Image(systemName: "person.circle")
-                    .font(.body)
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
-                    .background(.ultraThinMaterial, in: Circle())
-                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                profileButton(icon: "person.circle", color: .primary)
             }
+            .accessibilityLabel("Sign in with Google")
         }
+    }
+
+    private func profileButton(icon: String, color: Color) -> some View {
+        Image(systemName: icon)
+            .font(.body)
+            .foregroundColor(color)
+            .frame(width: 44, height: 44)
+            .background(.ultraThinMaterial, in: Circle())
+            .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
     }
 }

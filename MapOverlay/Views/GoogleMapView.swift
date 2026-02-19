@@ -20,38 +20,74 @@ struct GoogleMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: GMSMapView, context: Context) {
-        mapView.clear()
+        let coordinator = context.coordinator
 
         // Ground overlay when locked
         if viewModel.isLocked,
            let image = viewModel.selectedImage,
            let ne = viewModel.lockedNorthEast,
            let sw = viewModel.lockedSouthWest {
-            let bounds = GMSCoordinateBounds(
-                coordinate: sw,
-                coordinate: ne
-            )
-            let groundOverlay = GMSGroundOverlay(bounds: bounds, icon: image)
-            groundOverlay.opacity = Float(viewModel.opacity)
-            groundOverlay.bearing = viewModel.rotation
-            groundOverlay.map = mapView
+            let bounds = GMSCoordinateBounds(coordinate: sw, coordinate: ne)
+
+            func createOverlay() -> GMSGroundOverlay {
+                let overlay = GMSGroundOverlay(bounds: bounds, icon: image)
+                overlay.opacity = Float(viewModel.opacity)
+                overlay.bearing = viewModel.rotation
+                overlay.map = mapView
+                return overlay
+            }
+
+            if let existing = coordinator.groundOverlay {
+                // Update in-place to avoid flicker
+                existing.opacity = Float(viewModel.opacity)
+                existing.bearing = viewModel.rotation
+
+                // If bounds or image changed, recreate
+                let boundsChanged = existing.bounds?.northEast.latitude != ne.latitude
+                    || existing.bounds?.northEast.longitude != ne.longitude
+                    || existing.bounds?.southWest.latitude != sw.latitude
+                    || existing.bounds?.southWest.longitude != sw.longitude
+                let imageChanged = existing.icon !== image
+
+                if boundsChanged || imageChanged {
+                    existing.map = nil
+                    coordinator.groundOverlay = createOverlay()
+                }
+            } else {
+                coordinator.groundOverlay = createOverlay()
+            }
+        } else {
+            // Not locked — remove existing overlay
+            coordinator.groundOverlay?.map = nil
+            coordinator.groundOverlay = nil
         }
 
-        // Saved pin markers
-        for pin in viewModel.savedPins {
+        // Saved pin markers — only add/remove changed ones
+        let currentPinIDs = Set(viewModel.savedPins.map { $0.id })
+        let existingPinIDs = Set(coordinator.markers.keys)
+
+        // Remove markers for pins that no longer exist
+        for id in existingPinIDs.subtracting(currentPinIDs) {
+            coordinator.markers[id]?.map = nil
+            coordinator.markers.removeValue(forKey: id)
+        }
+
+        // Add markers for new pins
+        for pin in viewModel.savedPins where !existingPinIDs.contains(pin.id) {
             let marker = GMSMarker(position: CLLocationCoordinate2D(
                 latitude: pin.latitude,
                 longitude: pin.longitude
             ))
             marker.title = pin.name
             marker.map = mapView
+            coordinator.markers[pin.id] = marker
         }
 
         // Animate to newly added pin
         if let target = animateToCoordinate,
-           target.latitude != context.coordinator.lastTarget?.latitude ||
-           target.longitude != context.coordinator.lastTarget?.longitude {
-            context.coordinator.lastTarget = target
+           target.latitude != coordinator.lastTarget?.latitude ||
+           target.longitude != coordinator.lastTarget?.longitude {
+            coordinator.lastTarget = target
             let camera = GMSCameraPosition.camera(
                 withLatitude: target.latitude,
                 longitude: target.longitude,
@@ -68,6 +104,8 @@ struct GoogleMapView: UIViewRepresentable {
     class Coordinator: NSObject, GMSMapViewDelegate {
         let parent: GoogleMapView
         var lastTarget: CLLocationCoordinate2D?
+        var groundOverlay: GMSGroundOverlay?
+        var markers: [UUID: GMSMarker] = [:]
 
         init(_ parent: GoogleMapView) {
             self.parent = parent

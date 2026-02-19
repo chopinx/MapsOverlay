@@ -37,9 +37,7 @@ struct SavedOverlaysView: View {
                             .tint(.primary)
                         }
                         .onDelete { indexSet in
-                            for index in indexSet {
-                                viewModel.deleteOverlay(viewModel.savedOverlays[index])
-                            }
+                            indexSet.forEach { viewModel.deleteOverlay(viewModel.savedOverlays[$0]) }
                         }
                     }
                 }

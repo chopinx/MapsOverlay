@@ -3,12 +3,12 @@ import UIKit
 final class OverlayStore {
     private let fileManager = FileManager.default
 
-    private var overlaysDirectory: URL {
+    private lazy var overlaysDirectory: URL = {
         let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let dir = docs.appendingPathComponent("overlays", isDirectory: true)
         try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
-    }
+    }()
 
     private var metadataURL: URL {
         overlaysDirectory.appendingPathComponent("metadata.json")
@@ -29,7 +29,7 @@ final class OverlayStore {
 
         guard let data = image.pngData() else { return nil }
         do {
-            try data.write(to: imageURL)
+            try data.write(to: imageURL, options: .atomic)
         } catch {
             return nil
         }
@@ -75,6 +75,6 @@ final class OverlayStore {
 
     private func saveMetadata(_ overlays: [SavedOverlay]) {
         guard let data = try? JSONEncoder().encode(overlays) else { return }
-        try? data.write(to: metadataURL)
+        try? data.write(to: metadataURL, options: .atomic)
     }
 }

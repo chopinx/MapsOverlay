@@ -12,7 +12,6 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var showingSavedOverlays = false
     @Published var showingSaveDialog = false
     @Published var savedPins: [SavedPin] = []
-    @Published var showingSavedPins = false
 
     // The geographic bounds captured when the overlay is locked
     var lockedNorthEast: CLLocationCoordinate2D?
@@ -42,6 +41,7 @@ final class MapOverlayViewModel: ObservableObject {
     func removeOverlay() {
         selectedImage = nil
         isLocked = false
+        opacity = 0.5
         rotation = 0
         lockedNorthEast = nil
         lockedSouthWest = nil

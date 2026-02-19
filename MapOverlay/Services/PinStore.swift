@@ -17,6 +17,6 @@ final class PinStore {
 
     func save(_ pins: [SavedPin]) {
         guard let data = try? JSONEncoder().encode(pins) else { return }
-        try? data.write(to: storeURL)
+        try? data.write(to: storeURL, options: .atomic)
     }
 }

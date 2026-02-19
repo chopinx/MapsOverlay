@@ -6,7 +6,7 @@ struct PlaceSearchView: View {
     @State private var query = ""
     @State private var results: [SearchResult] = []
     @State private var isSearching = false
-    private let geocoder = CLGeocoder()
+    @State private var geocoder = CLGeocoder()
     var onPlaceSelected: (CLLocationCoordinate2D, String) -> Void
 
     var body: some View {
@@ -62,20 +62,25 @@ struct PlaceSearchView: View {
         isSearching = true
         geocoder.cancelGeocode()
         geocoder.geocodeAddressString(query) { placemarks, _ in
-            isSearching = false
-            results = (placemarks ?? []).compactMap { placemark in
-                guard let location = placemark.location else { return nil }
-                let name = [placemark.name, placemark.locality]
-                    .compactMap { $0 }
-                    .joined(separator: ", ")
-                let detail = [placemark.administrativeArea, placemark.country]
-                    .compactMap { $0 }
-                    .joined(separator: ", ")
-                return SearchResult(
-                    name: name.isEmpty ? "Unknown" : name,
-                    detail: detail.isEmpty ? nil : detail,
-                    coordinate: location.coordinate
-                )
+            DispatchQueue.main.async {
+                isSearching = false
+                results = (placemarks ?? []).compactMap { placemark in
+                    guard let location = placemark.location else { return nil }
+
+                    let name = [placemark.name, placemark.locality]
+                        .compactMap { $0 }
+                        .joined(separator: ", ")
+
+                    let detail = [placemark.administrativeArea, placemark.country]
+                        .compactMap { $0 }
+                        .joined(separator: ", ")
+
+                    return SearchResult(
+                        name: name.isEmpty ? "Unknown" : name,
+                        detail: detail.isEmpty ? nil : detail,
+                        coordinate: location.coordinate
+                    )
+                }
             }
         }
     }

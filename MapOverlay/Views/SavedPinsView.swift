@@ -33,9 +33,7 @@ struct SavedPinsView: View {
                             }
                         }
                         .onDelete { indexSet in
-                            for index in indexSet {
-                                viewModel.deletePin(viewModel.savedPins[index])
-                            }
+                            indexSet.forEach { viewModel.deletePin(viewModel.savedPins[$0]) }
                         }
                     }
                 }
