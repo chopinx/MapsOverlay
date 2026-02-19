@@ -45,6 +45,8 @@ struct GoogleMapView: UIViewRepresentable {
 
         func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
             let region = mapView.projection.visibleRegion()
+            parent.viewModel.mapProjection = mapView.projection
+            parent.viewModel.mapViewSize = mapView.bounds.size
             parent.onVisibleRegionChanged?(region)
         }
 

@@ -22,6 +22,9 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var lockedSouthWest: CLLocationCoordinate2D?
     @Published var searchResults: [SearchResult] = []
 
+    var mapProjection: GMSProjection?
+    var mapViewSize: CGSize = .zero
+
     private let store: OverlayStore
     private let pinStore: PinStore
     private let boundaryService: BoundaryService
@@ -49,9 +52,31 @@ final class MapOverlayViewModel: ObservableObject {
         guard selectedImage != nil,
               let visibleRegion = currentVisibleRegion else { return }
 
+        let cornersBeforeBake = transformCorners
         bakeTransformIfNeeded()
 
-        let bounds = GMSCoordinateBounds(region: visibleRegion)
+        let bounds: GMSCoordinateBounds
+        if let projection = mapProjection, mapViewSize.width > 0, mapViewSize.height > 0 {
+            let corners = [
+                cornersBeforeBake.topLeft,
+                cornersBeforeBake.topRight,
+                cornersBeforeBake.bottomLeft,
+                cornersBeforeBake.bottomRight,
+            ]
+            var computed = GMSCoordinateBounds()
+            for corner in corners {
+                let screenPoint = CGPoint(
+                    x: corner.x * mapViewSize.width,
+                    y: corner.y * mapViewSize.height
+                )
+                let coordinate = projection.coordinate(for: screenPoint)
+                computed = computed.includingCoordinate(coordinate)
+            }
+            bounds = computed
+        } else {
+            bounds = GMSCoordinateBounds(region: visibleRegion)
+        }
+
         lockedNorthEast = bounds.northEast
         lockedSouthWest = bounds.southWest
         isTransformMode = false
