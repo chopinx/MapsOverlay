@@ -12,6 +12,7 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var showingSavedOverlays = false
     @Published var showingSaveDialog = false
     @Published var savedPins: [SavedPin] = []
+    @Published var currentBoundary: PlaceBoundary?
 
     // The geographic bounds captured when the overlay is locked
     var lockedNorthEast: CLLocationCoordinate2D?
@@ -19,6 +20,7 @@ final class MapOverlayViewModel: ObservableObject {
 
     private let store = OverlayStore()
     private let pinStore = PinStore()
+    private let boundaryService = BoundaryService()
 
     init() {
         savedOverlays = store.loadAll()
@@ -88,6 +90,20 @@ final class MapOverlayViewModel: ObservableObject {
     func deleteOverlay(_ overlay: SavedOverlay) {
         store.delete(overlay)
         savedOverlays = store.loadAll()
+    }
+
+    // MARK: - Boundary
+
+    private var boundaryTask: Task<Void, Never>?
+
+    func fetchBoundary(for query: String) {
+        boundaryTask?.cancel()
+        currentBoundary = nil
+        boundaryTask = Task {
+            let result = await boundaryService.fetchBoundary(query: query)
+            guard !Task.isCancelled else { return }
+            currentBoundary = result
+        }
     }
 
     // MARK: - Pin management

@@ -83,17 +83,58 @@ struct GoogleMapView: UIViewRepresentable {
             coordinator.markers[pin.id] = marker
         }
 
-        // Animate to newly added pin
+        // Boundary polygons
+        let boundaryChanged = coordinator.lastBoundary != viewModel.currentBoundary
+        if boundaryChanged {
+            for polygon in coordinator.boundaryPolygons {
+                polygon.map = nil
+            }
+            coordinator.boundaryPolygons.removeAll()
+            coordinator.lastBoundary = viewModel.currentBoundary
+
+            if let boundary = viewModel.currentBoundary {
+                for ring in boundary.polygons {
+                    let path = GMSMutablePath()
+                    for coord in ring {
+                        path.add(coord)
+                    }
+                    let polygon = GMSPolygon(path: path)
+                    polygon.fillColor = UIColor.systemBlue.withAlphaComponent(0.15)
+                    polygon.strokeColor = UIColor.systemBlue.withAlphaComponent(0.45)
+                    polygon.strokeWidth = 2
+                    polygon.zIndex = 1
+                    polygon.map = mapView
+                    coordinator.boundaryPolygons.append(polygon)
+                }
+            }
+        }
+
+        // Fit camera to boundary when boundary arrives asynchronously
+        if boundaryChanged, let boundary = viewModel.currentBoundary, !boundary.polygons.isEmpty {
+            var bounds = GMSCoordinateBounds()
+            for ring in boundary.polygons {
+                for coord in ring {
+                    bounds = bounds.includingCoordinate(coord)
+                }
+            }
+            let update = GMSCameraUpdate.fit(bounds, withPadding: 60)
+            mapView.animate(with: update)
+        }
+
+        // Animate camera to coordinate (for pin-only results without boundary)
         if let target = animateToCoordinate,
-           target.latitude != coordinator.lastTarget?.latitude ||
-           target.longitude != coordinator.lastTarget?.longitude {
+           (target.latitude != coordinator.lastTarget?.latitude ||
+            target.longitude != coordinator.lastTarget?.longitude) {
             coordinator.lastTarget = target
-            let camera = GMSCameraPosition.camera(
-                withLatitude: target.latitude,
-                longitude: target.longitude,
-                zoom: 15.0
-            )
-            mapView.animate(to: camera)
+
+            if viewModel.currentBoundary == nil {
+                let camera = GMSCameraPosition.camera(
+                    withLatitude: target.latitude,
+                    longitude: target.longitude,
+                    zoom: 15.0
+                )
+                mapView.animate(to: camera)
+            }
         }
     }
 
@@ -106,6 +147,8 @@ struct GoogleMapView: UIViewRepresentable {
         var lastTarget: CLLocationCoordinate2D?
         var groundOverlay: GMSGroundOverlay?
         var markers: [UUID: GMSMarker] = [:]
+        var boundaryPolygons: [GMSPolygon] = []
+        var lastBoundary: PlaceBoundary?
 
         init(_ parent: GoogleMapView) {
             self.parent = parent

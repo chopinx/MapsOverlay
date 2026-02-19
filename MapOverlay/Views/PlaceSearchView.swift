@@ -7,7 +7,7 @@ struct PlaceSearchView: View {
     @State private var results: [SearchResult] = []
     @State private var isSearching = false
     @State private var geocoder = CLGeocoder()
-    var onPlaceSelected: (CLLocationCoordinate2D, String) -> Void
+    var onPlaceSelected: (CLLocationCoordinate2D, String, String) -> Void
 
     var body: some View {
         NavigationStack {
@@ -24,7 +24,7 @@ struct PlaceSearchView: View {
                 } else {
                     ForEach(results) { result in
                         Button {
-                            onPlaceSelected(result.coordinate, result.name)
+                            onPlaceSelected(result.coordinate, result.name, query)
                             dismiss()
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {

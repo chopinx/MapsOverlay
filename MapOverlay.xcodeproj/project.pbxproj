@@ -15,6 +15,7 @@
 		24ABE1D20B0461A4963FE8D9 /* OverlayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */; };
 		4A79C12C5390D6F9F1F9D988 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81ACA6D7FA606B2D3D501CB6 /* SettingsView.swift */; };
 		56C8BD16F693986182A1E54A /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = 383CE95DDBB983D45D729C09 /* GoogleMaps */; };
+		57BAF4E873FB572249A5598F /* BoundaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E268EA7807D75A05B813788 /* BoundaryService.swift */; };
 		5F7183A890F8FE2C477502FB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4DAAB1A3DAE3C6467EEA446 /* ContentView.swift */; };
 		71D881E6F8E17136E1718D1C /* SavedOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1568FE63DD3B7DA6CF833C /* SavedOverlay.swift */; };
 		72FC6CF21B1DEE7F539874BE /* PlaceSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059798B211A81E21D69ECEF6 /* PlaceSearchView.swift */; };
@@ -38,6 +39,7 @@
 		3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthService.swift; sourceTree = "<group>"; };
 		4FD60C7D48529C2F547E37D1 /* SavedPinsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPinsView.swift; sourceTree = "<group>"; };
 		5E86CA8EE550908825F6D80F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6E268EA7807D75A05B813788 /* BoundaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundaryService.swift; sourceTree = "<group>"; };
 		727D623CE3169099D6250A26 /* GoogleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleMapView.swift; sourceTree = "<group>"; };
 		767AA3F00F34CFDFDB9404AE /* MapOverlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapOverlayViewModel.swift; sourceTree = "<group>"; };
 		7B3415B467E1C838D518D0AC /* MapOverlayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapOverlayApp.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 		E305ABF5BC20487C507BC074 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				6E268EA7807D75A05B813788 /* BoundaryService.swift */,
 				3D1B305FD627879B95BF0315 /* GoogleAuthService.swift */,
 				9F2FE27D86DCE5DB7B02BA09 /* OverlayStore.swift */,
 				B43E093F238C823E54E0CB2E /* PinStore.swift */,
@@ -230,6 +233,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57BAF4E873FB572249A5598F /* BoundaryService.swift in Sources */,
 				988027038B46EB4EB5D9CD60 /* Config.swift in Sources */,
 				5F7183A890F8FE2C477502FB /* ContentView.swift in Sources */,
 				E02EF61707A5B4A162A3ADDD /* ControlPanelView.swift in Sources */,

@@ -79,13 +79,15 @@ struct ContentView: View {
             topBar
         }
         .sheet(isPresented: $showingSearch) {
-            PlaceSearchView { coordinate, name in
+            PlaceSearchView { coordinate, name, query in
                 viewModel.addPin(name: name, coordinate: coordinate)
+                viewModel.fetchBoundary(for: query)
                 animateTarget = coordinate
             }
         }
         .sheet(isPresented: $showingPins) {
             SavedPinsView(viewModel: viewModel) { pin in
+                viewModel.currentBoundary = nil
                 animateTarget = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
             }
         }
