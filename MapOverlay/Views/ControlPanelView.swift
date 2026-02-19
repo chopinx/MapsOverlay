@@ -44,7 +44,28 @@ struct ControlPanelView: View {
                     sliderRow("rotate.right", value: $viewModel.rotation, range: -180...180, step: 1, tint: .orange)
                         .accessibilityLabel("Rotation")
 
+                    if viewModel.isTransformMode && !viewModel.transformCorners.isIdentity {
+                        Button { viewModel.resetTransform() } label: {
+                            Text("Reset Transform")
+                                .font(.caption.bold())
+                                .foregroundColor(.purple)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+
                     HStack(spacing: 10) {
+                        circleIcon(
+                            "skew",
+                            tint: viewModel.isTransformMode ? .purple : .blue,
+                            accessibilityLabel: viewModel.isTransformMode ? "Exit transform" : "Free transform"
+                        ) {
+                            viewModel.toggleTransformMode()
+                        }
+                        .overlay(
+                            viewModel.isTransformMode
+                                ? Circle().stroke(Color.purple, lineWidth: 2).frame(width: 48, height: 48)
+                                : nil
+                        )
                         circleIcon("lock.fill", tint: .green, accessibilityLabel: "Lock overlay") {
                             NotificationCenter.default.post(name: .lockOverlayRequested, object: nil)
                         }
@@ -110,7 +131,7 @@ struct ControlPanelView: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundStyle(isDark ? tint : tint)
+                .foregroundStyle(tint)
                 .frame(width: 44, height: 44)
                 .background(
                     isDark ? AnyShapeStyle(.black.opacity(0.6)) : AnyShapeStyle(tint.opacity(0.15)),

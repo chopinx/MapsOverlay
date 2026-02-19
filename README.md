@@ -7,8 +7,9 @@ iOS app that lets you overlay any image from your photo library onto Google Maps
 - Import any image from your iPhone photo library
 - Adjustable transparency slider (5%-100%)
 - Rotate overlay images (-180° to 180°); rotation persists with saved overlays
+- Corner-based free transform: drag 4 corners to distort the overlay into an arbitrary quadrilateral
 - Pan and zoom the map to align with your overlay image
-- Lock the overlay as a geo-anchored ground layer (moves/scales/rotates with the map)
+- Lock the overlay as a geo-anchored ground layer (moves/scales/rotates with the map); free transform is baked into the image at lock time
 - Unlock to re-adjust alignment
 - Save overlays locally for reuse (image + geographic bounds + opacity + rotation)
 - Browse and load saved overlays
@@ -58,15 +59,17 @@ MapOverlayApp (entry point, API key setup)
 ├── ContentView (main composition, top bar with icon buttons)
 │   ├── GoogleMapView (UIViewRepresentable wrapping GMSMapView, renders ground overlays + pin markers)
 │   ├── OverlayImageView (floating semi-transparent rotatable image during alignment)
-│   ├── ControlPanelView (icons-only, left-aligned, collapsible; opacity/rotation sliders, lock/unlock/save/remove)
+│   ├── FreeTransformOverlayView (corner-draggable overlay with ProjectionTransform via GeometryEffect)
+│   ├── ControlPanelView (icons-only, left-aligned, collapsible; opacity/rotation sliders, transform toggle, lock/unlock/save/remove)
 │   ├── PlaceSearchView (CLGeocoder-based place/address search sheet)
 │   ├── SavedPinsView (list of persisted pins with navigate/delete)
 │   ├── SavedOverlaysView (list of persisted overlays)
 │   ├── SettingsView (API key config, Google Sign-In)
 │   ├── SignInView (Google Sign-In icon button)
 │   └── ImagePicker (PHPickerViewController wrapper)
-├── MapOverlayViewModel (state: image, opacity, rotation, lock, pins)
+├── MapOverlayViewModel (state: image, opacity, rotation, lock, transform corners, pins)
 ├── GoogleAuthService (Google Sign-In handling)
+├── FreeTransformService (homography computation for preview + CIPerspectiveTransform baking with Metal CIContext)
 ├── OverlayStore (local persistence: images + JSON metadata including rotation)
 ├── PinStore (local persistence: saved_pins.json)
 ├── SavedOverlay (Codable model: image path, NE/SW coords, opacity, rotation, name, date)
@@ -75,8 +78,8 @@ MapOverlayApp (entry point, API key setup)
 
 ### How It Works
 
-1. **Alignment mode**: User imports an image -> it floats semi-transparently over the map. User adjusts opacity and rotation via sliders in a collapsible panel, and pans/zooms the **map** to align with the image. The panel can be hidden via a toggle button.
-2. **Lock**: Captures the map's visible region as geographic bounds -> creates a `GMSGroundOverlay` pinned to those coordinates with the current rotation (bearing) -> removes the floating image.
+1. **Alignment mode**: User imports an image -> it floats semi-transparently over the map. User adjusts opacity and rotation via sliders in a collapsible panel, and pans/zooms the **map** to align with the image. Optional: tap the transform button to enter free transform mode and drag corners to distort the image. The panel can be hidden via a toggle button.
+2. **Lock**: If free transform was applied, bakes the perspective distortion into the image via CIPerspectiveTransform. Captures the map's visible region as geographic bounds -> creates a `GMSGroundOverlay` pinned to those coordinates with the current rotation (bearing) -> removes the floating image.
 3. **Locked mode**: The overlay is a native map layer that pans/zooms with the map. User can adjust opacity and rotation in real time, save, unlock, or remove. Controls expand from a single floating button (left-aligned).
 4. **Pins**: User searches for places via the search button -> CLGeocoder resolves addresses -> selecting a result adds a persistent `GMSMarker` to the map. Pins can be managed in the Saved Pins view.
 

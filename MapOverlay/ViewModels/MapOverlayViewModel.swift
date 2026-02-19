@@ -13,6 +13,8 @@ final class MapOverlayViewModel: ObservableObject {
     @Published var showingSaveDialog = false
     @Published var savedPins: [SavedPin] = []
     @Published var currentBoundary: PlaceBoundary?
+    @Published var isTransformMode = false
+    @Published var transformCorners: FreeTransformCorners = .identity
 
     // The geographic bounds captured when the overlay is locked
     var lockedNorthEast: CLLocationCoordinate2D?
@@ -21,6 +23,8 @@ final class MapOverlayViewModel: ObservableObject {
     private let store = OverlayStore()
     private let pinStore = PinStore()
     private let boundaryService = BoundaryService()
+    private let transformService = FreeTransformService()
+    private var originalImage: UIImage?
 
     init() {
         savedOverlays = store.loadAll()
@@ -30,23 +34,51 @@ final class MapOverlayViewModel: ObservableObject {
     func lockOverlay(visibleRegion: GMSVisibleRegion) {
         guard selectedImage != nil else { return }
 
+        bakeTransformIfNeeded()
+
         let bounds = GMSCoordinateBounds(region: visibleRegion)
         lockedNorthEast = bounds.northEast
         lockedSouthWest = bounds.southWest
+        isTransformMode = false
         isLocked = true
     }
 
+    private func bakeTransformIfNeeded() {
+        guard !transformCorners.isIdentity,
+              let image = selectedImage else { return }
+
+        originalImage = image
+        if let bakedImage = transformService.bakeTransform(image: image, corners: transformCorners) {
+            selectedImage = bakedImage
+        }
+    }
+
     func unlockOverlay() {
+        if let original = originalImage {
+            selectedImage = original
+            originalImage = nil
+        }
         isLocked = false
     }
 
     func removeOverlay() {
         selectedImage = nil
         isLocked = false
+        isTransformMode = false
+        transformCorners = .identity
+        originalImage = nil
         opacity = 0.5
         rotation = 0
         lockedNorthEast = nil
         lockedSouthWest = nil
+    }
+
+    func toggleTransformMode() {
+        isTransformMode.toggle()
+    }
+
+    func resetTransform() {
+        transformCorners = .identity
     }
 
     func saveOverlay(name: String) {
@@ -73,6 +105,9 @@ final class MapOverlayViewModel: ObservableObject {
 
     func loadOverlay(_ overlay: SavedOverlay) {
         guard let image = store.loadImage(for: overlay) else { return }
+        transformCorners = .identity
+        isTransformMode = false
+        originalImage = nil
         selectedImage = image
         opacity = overlay.opacity
         rotation = overlay.rotation

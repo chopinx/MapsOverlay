@@ -64,9 +64,15 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             if let image = viewModel.selectedImage, !viewModel.isLocked {
-                OverlayImageView(image: image, opacity: viewModel.opacity, rotation: viewModel.rotation)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
+                GeometryReader { geometry in
+                    if viewModel.isTransformMode || !viewModel.transformCorners.isIdentity {
+                        FreeTransformOverlayView(viewModel: viewModel, viewSize: geometry.size)
+                    } else {
+                        OverlayImageView(image: image, opacity: viewModel.opacity, rotation: viewModel.rotation)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .ignoresSafeArea()
             }
 
             // Control panel (collapses when locked)

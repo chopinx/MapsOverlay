@@ -35,15 +35,17 @@ pans/zooms with the map. Rotation is applied via `GMSGroundOverlay.bearing`.
 | `ContentView` | Main view: map + control panel + top bar (search, pins, settings, sign-in) |
 | `GoogleMapView` | `UIViewRepresentable` wrapping `GMSMapView`; renders ground overlays and pin markers |
 | `OverlayImageView` | Floating semi-transparent rotatable image during alignment |
-| `ControlPanelView` | Icons-only, left-aligned, collapsible; opacity/rotation sliders, lock/unlock/remove/save |
+| `FreeTransformOverlayView` | Corner-draggable overlay with ProjectionTransform via GeometryEffect |
+| `ControlPanelView` | Icons-only, left-aligned, collapsible; opacity/rotation sliders, transform toggle, lock/unlock/remove/save |
 | `ImagePicker` | `PHPickerViewController` wrapper |
 | `PlaceSearchView` | CLGeocoder-based place/address search sheet; returns coordinate + name |
 | `SavedOverlaysView` | List of saved overlays to load |
 | `SavedPinsView` | List of saved pins with navigate-to and delete |
 | `SettingsView` | API key config, Google Sign-In |
 | `SignInView` | Google Sign-In icon button with signed-in menu |
-| `MapOverlayViewModel` | Central state: image, opacity, rotation, lock state, bounds, pins |
+| `MapOverlayViewModel` | Central state: image, opacity, rotation, lock state, transform corners, bounds, pins |
 | `GoogleAuthService` | Google Sign-In handling |
+| `FreeTransformService` | Homography computation for preview + CIPerspectiveTransform baking with Metal CIContext |
 | `OverlayStore` | Persistence: save/load overlays (image + bounds + opacity + rotation) |
 | `PinStore` | Persistence: save/load pins (saved_pins.json) |
 | `SavedOverlay` | Model: id, name, imagePath, NE/SW coordinates, opacity, rotation, createdAt |
@@ -57,12 +59,17 @@ User picks image -> ViewModel.selectedImage
   -> Opacity slider adjusts ViewModel.opacity -> view updates
   -> Rotation slider adjusts ViewModel.rotation -> view updates
   -> User pans/zooms MAP to align
+  -> Optional: User taps Transform button -> FreeTransformOverlayView
+      -> 4 corner handles appear, user drags to distort image
+      -> Real-time preview via SwiftUI ProjectionTransform (GeometryEffect)
+      -> Reset button to snap corners back to identity
   -> Lock:
-      1. Read map visibleRegion (4 corners)
-      2. Create GMSGroundOverlay with image + bounds + bearing (rotation)
-      3. Add to GMSMapView, hide floating view
-      4. isLocked = true
-  -> Unlock: reverse of lock
+      1. If transform applied: bake distortion into image via CIPerspectiveTransform, store original for undo
+      2. Read map visibleRegion (4 corners)
+      3. Create GMSGroundOverlay with (baked) image + bounds + bearing (rotation)
+      4. Add to GMSMapView, hide floating view
+      5. isLocked = true
+  -> Unlock: restore original image if transform was baked, preserve corner state for re-adjustment
   -> Save: OverlayStore persists image + bounds + opacity + rotation
   -> Load: OverlayStore restores overlay (including rotation), creates GMSGroundOverlay
 
@@ -117,7 +124,8 @@ User taps pins icon -> SavedPinsView sheet
 Alignment panel (bottom, collapsible):
   [opacity slider]
   [rotation slider]
-  [Lock] [Remove]
+  [Reset Transform]  <- shown when transform active + corners moved
+  [Transform] [Lock] [Remove]
   [toggle chevron]
 
 Locked mode (bottom-left):
