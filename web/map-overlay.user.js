@@ -206,48 +206,81 @@
   let mapInstance = null;
   let mapContainer = null;
 
-  function findMapInstance() {
-    // Strategy 1: Look for google.maps.Map instances on DOM elements
-    const gmStyle = document.querySelector('.gm-style');
-    if (gmStyle) {
-      mapContainer = gmStyle;
-      let el = gmStyle;
-      while (el) {
-        for (const key of Object.keys(el)) {
-          if (key.startsWith('__') && el[key] && typeof el[key].getZoom === 'function') {
-            mapInstance = el[key];
-            return true;
-          }
-        }
-        el = el.parentElement;
+  function findMapContainer() {
+    // Google Maps web app DOM selectors, ordered by specificity
+    const selectors = [
+      '.gm-style',                    // Classic Google Maps JS API
+      'div[role="application"]',       // Modern Google Maps web app (2024+)
+      '#scene',                        // Older Google Maps layout
+      '#content-container',            // Alternative layout
+    ];
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (el && el.clientWidth > 100 && el.clientHeight > 100) {
+        return el;
       }
     }
+    // Last resort: find parent of the largest canvas (the map rendering surface)
+    let bestCanvas = null;
+    let bestArea = 0;
+    for (const c of document.querySelectorAll('canvas')) {
+      const area = c.width * c.height;
+      if (area > bestArea) { bestArea = area; bestCanvas = c; }
+    }
+    if (bestCanvas && bestCanvas.parentElement) {
+      return bestCanvas.parentElement;
+    }
+    return null;
+  }
 
-    // Strategy 2: Check _unsafeWindow for exposed map
-    if (_unsafeWindow.google && _unsafeWindow.google.maps) {
-      // Try to find via known internal hooks
-      const canvases = document.querySelectorAll('canvas');
-      for (const canvas of canvases) {
-        let el = canvas.parentElement;
-        while (el) {
+  function findMapInstance() {
+    // First ensure we have a map container
+    if (!mapContainer) {
+      mapContainer = findMapContainer();
+    }
+
+    // Try to find a google.maps.Map instance on DOM elements
+    const searchRoots = [
+      mapContainer,
+      document.querySelector('.gm-style'),
+      document.querySelector('div[role="application"]'),
+    ].filter(Boolean);
+
+    for (const root of searchRoots) {
+      let el = root;
+      while (el) {
+        try {
           for (const key of Object.keys(el)) {
             try {
-              if (el[key] && typeof el[key].getZoom === 'function') {
+              if (el[key] && typeof el[key].getZoom === 'function' && typeof el[key].getProjection === 'function') {
                 mapInstance = el[key];
-                mapContainer = document.querySelector('.gm-style') || el;
                 return true;
               }
             } catch (_) { /* ignore cross-origin errors */ }
           }
-          el = el.parentElement;
-        }
+        } catch (_) { /* Object.keys can throw on some DOM elements */ }
+        el = el.parentElement;
       }
     }
 
-    // Strategy 3: Use the scene container as fallback
-    const scene = document.querySelector('#scene');
-    if (scene) {
-      mapContainer = scene;
+    // Try canvas elements' ancestor chain
+    for (const canvas of document.querySelectorAll('canvas')) {
+      let el = canvas.parentElement;
+      let depth = 0;
+      while (el && depth < 10) {
+        try {
+          for (const key of Object.keys(el)) {
+            try {
+              if (el[key] && typeof el[key].getZoom === 'function') {
+                mapInstance = el[key];
+                return true;
+              }
+            } catch (_) {}
+          }
+        } catch (_) {}
+        el = el.parentElement;
+        depth++;
+      }
     }
 
     return false;
@@ -929,15 +962,17 @@
     const maxAttempts = 30;
     const retryInterval = setInterval(() => {
       attempts++;
+      if (!mapContainer) {
+        mapContainer = findMapContainer();
+      }
       if (findMapInstance()) {
         console.log('[MapOverlay] Map instance found after', attempts, 'attempt(s)');
-        if (!mapContainer) {
-          mapContainer = document.querySelector('.gm-style') || document.querySelector('#scene');
-        }
         clearInterval(retryInterval);
       } else if (attempts >= maxAttempts) {
         console.warn('[MapOverlay] Map instance not found after', maxAttempts, 'attempts. Overlay will work without geo-locking.');
-        mapContainer = document.querySelector('.gm-style') || document.querySelector('#scene') || document.querySelector('#content-container');
+        if (!mapContainer) {
+          mapContainer = findMapContainer() || document.body;
+        }
         clearInterval(retryInterval);
       }
     }, 1000);
