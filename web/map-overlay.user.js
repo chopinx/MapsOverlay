@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         MapOverlay
 // @namespace    https://github.com/chopinx/MapsOverlay
-// @version      0.1.0
+// @version      0.2.0
 // @description  Overlay images on Google Maps with free-transform alignment and geo-locking
-// @match        https://www.google.com/maps/*
-// @match        https://www.google.com/maps?*
-// @match        https://www.google.com/maps
+// @match        https://www.google.com/maps*
+// @match        https://www.google.de/maps*
+// @match        https://www.google.co.uk/maps*
+// @match        https://www.google.co.jp/maps*
+// @match        https://www.google.fr/maps*
 // @match        https://maps.google.com/*
-// @include      https://www.google.*/maps*
 // @grant        unsafeWindow
 // @grant        GM_addStyle
 // @run-at       document-idle
@@ -47,7 +48,17 @@
   console.log('[MapOverlay] Userscript loaded, waiting for map...');
 
   // ── Styles ──
-  GM_addStyle(`
+  function addStyle(css) {
+    if (typeof GM_addStyle === 'function') {
+      GM_addStyle(css);
+    } else {
+      const style = document.createElement('style');
+      style.textContent = css;
+      document.head.appendChild(style);
+    }
+  }
+
+  addStyle(`
     #mo-toolbar {
       position: fixed;
       top: 10px;
@@ -111,8 +122,8 @@
     }
     .mo-handle {
       position: absolute;
-      width: ${HANDLE_SIZE}px;
-      height: ${HANDLE_SIZE}px;
+      width: 16px;
+      height: 16px;
       background: white;
       border: 2px solid #4285f4;
       border-radius: 50%;
