@@ -14,9 +14,14 @@
 (function () {
   'use strict';
 
+  // ── Safe unsafeWindow reference ──
+  const _unsafeWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+
   // ── Constants ──
   const STORAGE_KEY = 'mapOverlay_savedOverlays';
-  const MAX_IMAGE_DIMENSION = 2048;
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+  const MAX_IMAGE_DIMENSION = 4096;
+  const MIN_QUAD_AREA_PX = 25; // 5px * 5px — degenerate quad threshold
   const HANDLE_SIZE = 16;
 
   // ── State ──
@@ -45,7 +50,7 @@
       position: fixed;
       top: 10px;
       left: 10px;
-      z-index: 10001;
+      z-index: 100001;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -100,7 +105,7 @@
       left: 0;
       transform-origin: 0 0;
       pointer-events: none;
-      z-index: 10000;
+      z-index: 100000;
     }
     .mo-handle {
       position: absolute;
@@ -110,7 +115,7 @@
       border: 2px solid #4285f4;
       border-radius: 50%;
       cursor: grab;
-      z-index: 10002;
+      z-index: 100002;
       transform: translate(-50%, -50%);
       box-shadow: 0 1px 4px rgba(0,0,0,0.3);
       touch-action: none;
@@ -120,7 +125,7 @@
       position: fixed;
       top: 10px;
       left: 220px;
-      z-index: 10003;
+      z-index: 100003;
       background: rgba(32,33,36,0.92);
       backdrop-filter: blur(8px);
       border-radius: 12px;
@@ -205,8 +210,8 @@
       }
     }
 
-    // Strategy 2: Check unsafeWindow for exposed map
-    if (unsafeWindow.google && unsafeWindow.google.maps) {
+    // Strategy 2: Check _unsafeWindow for exposed map
+    if (_unsafeWindow.google && _unsafeWindow.google.maps) {
       // Try to find via known internal hooks
       const canvases = document.querySelectorAll('canvas');
       for (const canvas of canvases) {
@@ -246,11 +251,12 @@
       const sw = bounds.getSouthWest();
       const topRight = projection.fromLatLngToPoint(ne);
       const bottomLeft = projection.fromLatLngToPoint(sw);
-      const scale = Math.pow(2, mapInstance.getZoom());
+      // Antimeridian fix: when crossing ±180, topRight.x < bottomLeft.x
+      if (topRight.x < bottomLeft.x) topRight.x += 256;
       const cw = mapContainer.clientWidth;
       const ch = mapContainer.clientHeight;
 
-      const worldPoint = new unsafeWindow.google.maps.Point(
+      const worldPoint = new _unsafeWindow.google.maps.Point(
         bottomLeft.x + (x / cw) * (topRight.x - bottomLeft.x),
         topRight.y + (y / ch) * (bottomLeft.y - topRight.y)
       );
@@ -269,6 +275,8 @@
       const sw = bounds.getSouthWest();
       const topRight = projection.fromLatLngToPoint(ne);
       const bottomLeft = projection.fromLatLngToPoint(sw);
+      // Antimeridian fix: when crossing ±180, topRight.x < bottomLeft.x
+      if (topRight.x < bottomLeft.x) topRight.x += 256;
       const cw = mapContainer.clientWidth;
       const ch = mapContainer.clientHeight;
 
@@ -340,34 +348,37 @@
     mapContainer.style.position = 'relative';
     mapContainer.appendChild(overlayImg);
 
-    // Position image centered in map container at reasonable size
-    const containerW = mapContainer.clientWidth;
-    const containerH = mapContainer.clientHeight;
-    const imgW = state.image.naturalWidth;
-    const imgH = state.image.naturalHeight;
-    const scale = Math.min(
-      (containerW * 0.6) / imgW,
-      (containerH * 0.6) / imgH,
-      1
-    );
-    const displayW = imgW * scale;
-    const displayH = imgH * scale;
-    const offsetX = (containerW - displayW) / 2;
-    const offsetY = (containerH - displayH) / 2;
+    // Only reset corners if not loading a locked overlay with geo-corners
+    if (!(state.isLocked && state.geoCorners)) {
+      const containerW = mapContainer.clientWidth;
+      const containerH = mapContainer.clientHeight;
+      const imgW = Math.min(state.image.naturalWidth, MAX_IMAGE_DIMENSION);
+      const imgH = Math.min(state.image.naturalHeight, MAX_IMAGE_DIMENSION);
+      const scale = Math.min(
+        (containerW * 0.6) / imgW,
+        (containerH * 0.6) / imgH,
+        1
+      );
+      const displayW = imgW * scale;
+      const displayH = imgH * scale;
+      const offsetX = (containerW - displayW) / 2;
+      const offsetY = (containerH - displayH) / 2;
 
-    // Set initial corner positions in screen pixels
-    state.corners = {
-      topLeft: { x: offsetX, y: offsetY },
-      topRight: { x: offsetX + displayW, y: offsetY },
-      bottomLeft: { x: offsetX, y: offsetY + displayH },
-      bottomRight: { x: offsetX + displayW, y: offsetY + displayH },
-    };
+      state.corners = {
+        topLeft: { x: offsetX, y: offsetY },
+        topRight: { x: offsetX + displayW, y: offsetY },
+        bottomLeft: { x: offsetX, y: offsetY + displayH },
+        bottomRight: { x: offsetX + displayW, y: offsetY + displayH },
+      };
+    }
 
     // Create corner handles
     for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
       const handle = document.createElement('div');
       handle.className = 'mo-handle';
       handle.dataset.corner = key;
+      handle.setAttribute('tabindex', '0');
+      handle.setAttribute('role', 'button');
       mapContainer.appendChild(handle);
       handles.push(handle);
       setupHandleDrag(handle, key);
@@ -448,8 +459,8 @@
   function updateOverlayTransform() {
     if (!overlayImg || !state.image || !mapContainer) return;
 
-    const imgW = state.image.naturalWidth;
-    const imgH = state.image.naturalHeight;
+    const imgW = Math.min(state.image.naturalWidth, MAX_IMAGE_DIMENSION);
+    const imgH = Math.min(state.image.naturalHeight, MAX_IMAGE_DIMENSION);
 
     // Corner positions in screen pixels
     let tl, tr, bl, br;
@@ -467,6 +478,14 @@
       bl = state.corners.bottomLeft;
       br = state.corners.bottomRight;
     }
+
+    // Skip degenerate quads where all corners are within ~5px of each other
+    const cx = (tl.x + tr.x + bl.x + br.x) / 4;
+    const cy = (tl.y + tr.y + bl.y + br.y) / 4;
+    const allClose = [tl, tr, bl, br].every(
+      p => Math.abs(p.x - cx) < 5 && Math.abs(p.y - cy) < 5
+    );
+    if (allClose) return;
 
     // Compute homography from image rect (0,0)-(imgW,imgH) to screen quad
     const matrix = computeHomography(imgW, imgH, tl, tr, br, bl);
@@ -496,6 +515,9 @@
       if (state.isLocked) return;
       dragging = true;
       handle.setPointerCapture(e.pointerId);
+      if (mapInstance && typeof mapInstance.setOptions === 'function') {
+        mapInstance.setOptions({ draggable: false });
+      }
       e.stopPropagation();
       e.preventDefault();
     });
@@ -518,15 +540,23 @@
       updateOverlayTransform();
     });
 
+    const restoreMapDrag = () => {
+      if (mapInstance && typeof mapInstance.setOptions === 'function') {
+        mapInstance.setOptions({ draggable: true });
+      }
+    };
+
     handle.addEventListener('pointerup', (e) => {
       if (dragging) {
         dragging = false;
         handle.releasePointerCapture(e.pointerId);
+        restoreMapDrag();
       }
     });
 
     handle.addEventListener('lostpointercapture', () => {
       dragging = false;
+      restoreMapDrag();
     });
   }
 
@@ -553,8 +583,8 @@
     state.geoCorners = {};
     for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
       // Store as google.maps.LatLng-like objects for latLngToScreen
-      if (unsafeWindow.google && unsafeWindow.google.maps) {
-        state.geoCorners[key] = new unsafeWindow.google.maps.LatLng(
+      if (_unsafeWindow.google && _unsafeWindow.google.maps) {
+        state.geoCorners[key] = new _unsafeWindow.google.maps.LatLng(
           geoCorners[key].lat, geoCorners[key].lng
         );
       } else {
@@ -604,8 +634,17 @@
       mapChangeListeners.push(mapInstance.addListener('bounds_changed', onMapChange));
       mapChangeListeners.push(mapInstance.addListener('zoom_changed', onMapChange));
     } else {
-      // Fallback: MutationObserver on style changes in map container
-      const observer = new MutationObserver(onMapChange);
+      // Fallback: MutationObserver on style changes in map container (debounced)
+      let mutationPending = false;
+      const debouncedMapChange = () => {
+        if (mutationPending) return;
+        mutationPending = true;
+        setTimeout(() => {
+          mutationPending = false;
+          onMapChange();
+        }, 16);
+      };
+      const observer = new MutationObserver(debouncedMapChange);
       if (mapContainer) {
         observer.observe(mapContainer, {
           attributes: true,
@@ -667,8 +706,8 @@
       state.geoCorners = {};
       for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
         const c = entry.corners[key];
-        if (unsafeWindow.google && unsafeWindow.google.maps) {
-          state.geoCorners[key] = new unsafeWindow.google.maps.LatLng(c.lat, c.lng);
+        if (_unsafeWindow.google && _unsafeWindow.google.maps) {
+          state.geoCorners[key] = new _unsafeWindow.google.maps.LatLng(c.lat, c.lng);
         } else {
           state.geoCorners[key] = c;
         }
@@ -676,9 +715,6 @@
       state.isLocked = true;
 
       createOverlayElement();
-      // Override: since we are locked, geoCorners will be used in updateOverlayTransform
-      state.isLocked = true;
-      updateOverlayTransform();
       updateToolbarState();
       startMapChangeListener();
 
@@ -701,6 +737,8 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedOverlays));
     } catch (e) {
+      // Rollback the last added entry on quota exhaustion
+      state.savedOverlays.pop();
       console.error('[MapOverlay] Failed to save:', e);
       alert('Failed to save overlay. Storage may be full.');
     }
@@ -721,9 +759,12 @@
   function renderSavedList() {
     const list = document.getElementById('mo-saved-list');
     if (!list) return;
-    list.innerHTML = '';
+    list.replaceChildren();
     if (state.savedOverlays.length === 0) {
-      list.innerHTML = '<p style="color:#9aa0a6;padding:8px 0;">No saved overlays</p>';
+      const empty = document.createElement('p');
+      empty.style.cssText = 'color:#9aa0a6;padding:8px 0;';
+      empty.textContent = 'No saved overlays';
+      list.appendChild(empty);
       return;
     }
     for (const entry of state.savedOverlays) {
@@ -796,6 +837,11 @@
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      if (file.size > MAX_FILE_SIZE) {
+        alert('File is too large (max 20 MB).');
+        fileInput.value = '';
+        return;
+      }
       try {
         state.image = await loadImageFile(file);
         state.isLocked = false;
@@ -843,12 +889,27 @@
     });
   }
 
+  // ── Navigation Re-discovery ──
+  function startNavigationWatcher() {
+    let lastUrl = window.location.href;
+    const checkUrl = () => {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        findMapInstance();
+      }
+    };
+    window.addEventListener('popstate', checkUrl);
+    setInterval(checkUrl, 2000);
+  }
+
   // ── Initialization ──
   function init() {
     loadPersistedOverlays();
     createToolbar();
     wireEvents();
     updateToolbarState();
+
+    startNavigationWatcher();
 
     // Try to find the map instance with retries (Google Maps loads async)
     let attempts = 0;
