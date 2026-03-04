@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         MapOverlay
 // @namespace    https://github.com/chopinx/MapsOverlay
-// @version      0.2.0
+// @version      0.3.0
+// @updated      2026-03-04
 // @description  Overlay images on Google Maps with free-transform alignment and geo-locking
 // @match        https://www.google.com/maps*
 // @match        https://www.google.de/maps*
