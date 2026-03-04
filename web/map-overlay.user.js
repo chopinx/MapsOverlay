@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MapOverlay
 // @namespace    https://github.com/chopinx/MapsOverlay
-// @version      0.3.0
+// @version      0.3.1
 // @updated      2026-03-04
 // @description  Overlay images on Google Maps with free-transform alignment and geo-locking
 // @match        https://www.google.com/maps*
@@ -63,7 +63,7 @@
     #mo-toolbar {
       position: fixed;
       top: 10px;
-      left: 10px;
+      right: 10px;
       z-index: 100001;
       display: flex;
       flex-direction: column;
@@ -138,7 +138,7 @@
     #mo-saved-panel {
       position: fixed;
       top: 10px;
-      left: 220px;
+      right: 220px;
       z-index: 100003;
       background: rgba(32,33,36,0.92);
       backdrop-filter: blur(8px);
