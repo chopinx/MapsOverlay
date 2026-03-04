@@ -1,8 +1,10 @@
 # MapsOverlay
 
-iOS app that lets you overlay any image from your photo library onto Google Maps as a semi-transparent layer. Align the map to match your image, lock it as a geo-anchored overlay, and use Google Maps normally with the layer visible.
+Overlay any image onto Google Maps, align it with real-world features using corner-based free transform, and lock it as a geo-anchored layer that follows pan/zoom. Available as an **iOS app** and a **browser userscript** for maps.google.com.
 
-## Features
+## iOS App
+
+### Features
 
 - Import any image from your iPhone photo library
 - Adjustable transparency slider (5%-100%)
@@ -87,3 +89,51 @@ MapOverlayApp (entry point, API key setup)
 
 - [Google Maps SDK for iOS](https://github.com/googlemaps/ios-maps-sdk) (SPM, >= 10.0.0)
 - [Google Sign-In for iOS](https://github.com/google/GoogleSignIn-iOS) (SPM, >= 8.0.0)
+
+---
+
+## Web Version (Tampermonkey Userscript)
+
+A Tampermonkey userscript that adds image overlay functionality directly to maps.google.com — no API key required.
+
+### Features (Web)
+
+- Load any local image as a semi-transparent overlay on Google Maps
+- 4 corner drag handles for free-transform (perspective warp to align with map features)
+- Adjustable opacity (5%–100%)
+- Lock the overlay to geo-coordinates — follows map pan and zoom
+- Save and load named overlays locally (browser localStorage)
+- Dark theme floating toolbar, collapsible
+- Keyboard-accessible corner handles
+- Handles antimeridian crossing and map navigation
+
+### Prerequisites (Web)
+
+- Chrome, Firefox, or Edge
+- [Tampermonkey](https://www.tampermonkey.net/) browser extension
+
+### Setup (Web)
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) for your browser
+2. Open Tampermonkey dashboard → click "+" to create a new script
+3. Paste the contents of `web/map-overlay.user.js` → Save (Ctrl+S)
+4. Navigate to [Google Maps](https://www.google.com/maps)
+5. The "Overlay" toolbar appears in the top-left corner
+
+### Usage (Web)
+
+1. Click **Load Image** → select an image from your computer
+2. Drag the **4 corner handles** to warp and align the image with map features
+3. Adjust **opacity** with the slider
+4. Click **Lock** to geo-anchor the overlay — it will follow map pan and zoom
+5. Click **Save** to persist the overlay in your browser
+6. Click **Saved** to browse and load previously saved overlays
+7. Click **Unlock** to return to alignment mode
+8. Click **Remove** to clear the overlay
+
+### How It Works (Web)
+
+1. **Alignment mode**: Image floats over the map with 4 draggable corner handles. A homography matrix (ported from the iOS `FreeTransformService`) computes a CSS `matrix3d()` transform for real-time perspective rendering.
+2. **Lock**: Corner screen positions are converted to lat/lng via Google Maps' projection API. The overlay becomes geo-anchored.
+3. **Locked mode**: On every map viewport change (`bounds_changed`, `zoom_changed`), the stored lat/lng corners are re-projected to screen coordinates and the CSS transform is updated. The overlay tracks pan/zoom seamlessly.
+4. **Persistence**: Overlays are saved to `localStorage` as base64 image data + 4 geo-corner coordinates + opacity + metadata.
