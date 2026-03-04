@@ -3,9 +3,11 @@
 // @namespace    https://github.com/chopinx/MapsOverlay
 // @version      0.1.0
 // @description  Overlay images on Google Maps with free-transform alignment and geo-locking
-// @match        https://www.google.com/maps*
-// @match        https://www.google.*/maps*
+// @match        https://www.google.com/maps/*
+// @match        https://www.google.com/maps?*
+// @match        https://www.google.com/maps
 // @match        https://maps.google.com/*
+// @include      https://www.google.*/maps*
 // @grant        unsafeWindow
 // @grant        GM_addStyle
 // @run-at       document-idle
