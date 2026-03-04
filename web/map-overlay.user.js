@@ -286,60 +286,72 @@
     return false;
   }
 
-  // ── Coordinate Conversion ──
-  function screenToLatLng(x, y) {
-    if (mapInstance && typeof mapInstance.getProjection === 'function') {
-      const projection = mapInstance.getProjection();
-      const bounds = mapInstance.getBounds();
-      if (!projection || !bounds) return extractCenterFromUrl();
-
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
-      const topRight = projection.fromLatLngToPoint(ne);
-      const bottomLeft = projection.fromLatLngToPoint(sw);
-      // Antimeridian fix: when crossing ±180, topRight.x < bottomLeft.x
-      if (topRight.x < bottomLeft.x) topRight.x += 256;
-      const cw = mapContainer.clientWidth;
-      const ch = mapContainer.clientHeight;
-
-      const worldPoint = new _unsafeWindow.google.maps.Point(
-        bottomLeft.x + (x / cw) * (topRight.x - bottomLeft.x),
-        topRight.y + (y / ch) * (bottomLeft.y - topRight.y)
-      );
-      return projection.fromPointToLatLng(worldPoint);
-    }
-    return extractCenterFromUrl();
-  }
-
-  function latLngToScreen(latLng) {
-    if (mapInstance && typeof mapInstance.getProjection === 'function') {
-      const projection = mapInstance.getProjection();
-      const bounds = mapInstance.getBounds();
-      if (!projection || !bounds) return null;
-
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
-      const topRight = projection.fromLatLngToPoint(ne);
-      const bottomLeft = projection.fromLatLngToPoint(sw);
-      // Antimeridian fix: when crossing ±180, topRight.x < bottomLeft.x
-      if (topRight.x < bottomLeft.x) topRight.x += 256;
-      const cw = mapContainer.clientWidth;
-      const ch = mapContainer.clientHeight;
-
-      const worldPoint = projection.fromLatLngToPoint(latLng);
-      const px = (worldPoint.x - bottomLeft.x) / (topRight.x - bottomLeft.x) * cw;
-      const py = (worldPoint.y - topRight.y) / (bottomLeft.y - topRight.y) * ch;
-      return { x: px, y: py };
+  // ── Viewport Parsing ──
+  // Google Maps web app stores viewport in the URL as @lat,lng,zoomz
+  function getViewport() {
+    const match = window.location.href.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*),(\d+\.?\d*)z/);
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]), zoom: parseFloat(match[3]) };
     }
     return null;
   }
 
-  function extractCenterFromUrl() {
-    const match = window.location.href.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-    if (match) {
-      return { lat: () => parseFloat(match[1]), lng: () => parseFloat(match[2]) };
-    }
-    return { lat: () => 0, lng: () => 0 };
+  // ── Mercator Projection (self-contained, no Google Maps API needed) ──
+  // Google Maps uses a Mercator projection with a 256px tile at zoom 0.
+  // World coordinates: x = [0, 256], y = [0, 256]
+
+  const TILE_SIZE = 256;
+
+  function latLngToWorld(lat, lng) {
+    const siny = Math.sin((lat * Math.PI) / 180);
+    // Clamp to avoid infinity at poles
+    const clampedSiny = Math.max(-0.9999, Math.min(0.9999, siny));
+    return {
+      x: TILE_SIZE * (0.5 + lng / 360),
+      y: TILE_SIZE * (0.5 - Math.log((1 + clampedSiny) / (1 - clampedSiny)) / (4 * Math.PI)),
+    };
+  }
+
+  function worldToLatLng(wx, wy) {
+    const lng = (wx / TILE_SIZE - 0.5) * 360;
+    const latRadians = (0.5 - wy / TILE_SIZE) * 2 * Math.PI;
+    const lat = (180 / Math.PI) * Math.atan(Math.sinh(latRadians));
+    return { lat, lng };
+  }
+
+  function screenToLatLng(x, y) {
+    const vp = getViewport();
+    if (!vp || !mapContainer) return null;
+
+    const scale = Math.pow(2, vp.zoom);
+    const cw = mapContainer.clientWidth;
+    const ch = mapContainer.clientHeight;
+    const center = latLngToWorld(vp.lat, vp.lng);
+
+    // Screen center is at (cw/2, ch/2), each pixel = 1/scale world units
+    const wx = center.x + (x - cw / 2) / scale;
+    const wy = center.y + (y - ch / 2) / scale;
+
+    return worldToLatLng(wx, wy);
+  }
+
+  function latLngToScreen(latLng) {
+    const vp = getViewport();
+    if (!vp || !mapContainer) return null;
+
+    const lat = typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat;
+    const lng = typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng;
+
+    const scale = Math.pow(2, vp.zoom);
+    const cw = mapContainer.clientWidth;
+    const ch = mapContainer.clientHeight;
+    const center = latLngToWorld(vp.lat, vp.lng);
+    const point = latLngToWorld(lat, lng);
+
+    const x = (point.x - center.x) * scale + cw / 2;
+    const y = (point.y - center.y) * scale + ch / 2;
+
+    return { x, y };
   }
 
   // ── Image Loading ──
@@ -610,34 +622,24 @@
   function lockOverlay() {
     if (!state.image || !mapContainer) return;
 
+    const vp = getViewport();
+    if (!vp) {
+      console.warn('[MapOverlay] Cannot lock: no viewport info in URL');
+      alert('Cannot lock: unable to read map viewport from URL. Try panning the map first.');
+      return;
+    }
+
     const geoCorners = {};
     for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
-      const sx = state.corners[key].x;
-      const sy = state.corners[key].y;
-      const latLng = screenToLatLng(sx, sy);
+      const latLng = screenToLatLng(state.corners[key].x, state.corners[key].y);
       if (!latLng) {
-        console.warn('[MapOverlay] Cannot lock: projection unavailable');
+        console.warn('[MapOverlay] Cannot lock: projection failed for', key);
         return;
       }
-      // Normalize to plain object with lat/lng values
-      geoCorners[key] = {
-        lat: typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat,
-        lng: typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng,
-      };
+      geoCorners[key] = { lat: latLng.lat, lng: latLng.lng };
     }
 
-    state.geoCorners = {};
-    for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
-      // Store as google.maps.LatLng-like objects for latLngToScreen
-      if (_unsafeWindow.google && _unsafeWindow.google.maps) {
-        state.geoCorners[key] = new _unsafeWindow.google.maps.LatLng(
-          geoCorners[key].lat, geoCorners[key].lng
-        );
-      } else {
-        state.geoCorners[key] = geoCorners[key];
-      }
-    }
-
+    state.geoCorners = geoCorners;
     state.isLocked = true;
     updateOverlayTransform();
     updateToolbarState();
@@ -665,8 +667,11 @@
   }
 
   // ── Map Change Listener ──
-  let mapChangeListeners = [];
+  // Google Maps web app doesn't expose JS API events.
+  // We detect viewport changes via URL polling + MutationObserver on the DOM.
+  let mapChangeCleanup = null;
   let rafId = null;
+  let lastViewportUrl = '';
 
   function onMapChange() {
     if (rafId) cancelAnimationFrame(rafId);
@@ -675,38 +680,56 @@
 
   function startMapChangeListener() {
     stopMapChangeListener();
+    const cleanups = [];
 
-    if (mapInstance && typeof mapInstance.addListener === 'function') {
-      mapChangeListeners.push(mapInstance.addListener('bounds_changed', onMapChange));
-      mapChangeListeners.push(mapInstance.addListener('zoom_changed', onMapChange));
-    } else {
-      // Fallback: MutationObserver on style changes in map container (debounced)
+    // 1. Poll URL for viewport changes (Google Maps updates URL on pan/zoom)
+    lastViewportUrl = window.location.href;
+    const urlPoll = setInterval(() => {
+      const current = window.location.href;
+      if (current !== lastViewportUrl) {
+        lastViewportUrl = current;
+        onMapChange();
+      }
+    }, 100);
+    cleanups.push(() => clearInterval(urlPoll));
+
+    // 2. MutationObserver on map container for real-time DOM changes during drag
+    if (mapContainer) {
       let mutationPending = false;
-      const debouncedMapChange = () => {
+      const observer = new MutationObserver(() => {
         if (mutationPending) return;
         mutationPending = true;
         setTimeout(() => {
           mutationPending = false;
           onMapChange();
         }, 16);
-      };
-      const observer = new MutationObserver(debouncedMapChange);
-      if (mapContainer) {
-        observer.observe(mapContainer, {
-          attributes: true,
-          attributeFilter: ['style'],
-          subtree: true,
-        });
-      }
-      mapChangeListeners.push({ remove: () => observer.disconnect() });
+      });
+      observer.observe(mapContainer, {
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+        childList: true,
+        subtree: true,
+      });
+      cleanups.push(() => observer.disconnect());
     }
+
+    // 3. Listen for popstate (back/forward navigation)
+    const popHandler = () => onMapChange();
+    window.addEventListener('popstate', popHandler);
+    cleanups.push(() => window.removeEventListener('popstate', popHandler));
+
+    // 4. Use google.maps events if API instance is available
+    if (mapInstance && typeof mapInstance.addListener === 'function') {
+      const l1 = mapInstance.addListener('bounds_changed', onMapChange);
+      const l2 = mapInstance.addListener('zoom_changed', onMapChange);
+      cleanups.push(() => { l1.remove(); l2.remove(); });
+    }
+
+    mapChangeCleanup = () => cleanups.forEach(fn => fn());
   }
 
   function stopMapChangeListener() {
-    mapChangeListeners.forEach(l => {
-      if (typeof l.remove === 'function') l.remove();
-    });
-    mapChangeListeners = [];
+    if (mapChangeCleanup) { mapChangeCleanup(); mapChangeCleanup = null; }
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   }
 
@@ -717,15 +740,8 @@
     const name = prompt('Name this overlay:', 'Overlay ' + (state.savedOverlays.length + 1));
     if (!name) return;
 
-    // Serialize geoCorners to plain lat/lng values
-    const serializedCorners = {};
-    for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
-      const gc = state.geoCorners[key];
-      serializedCorners[key] = {
-        lat: typeof gc.lat === 'function' ? gc.lat() : gc.lat,
-        lng: typeof gc.lng === 'function' ? gc.lng() : gc.lng,
-      };
-    }
+    // geoCorners are already plain {lat, lng} objects
+    const serializedCorners = JSON.parse(JSON.stringify(state.geoCorners));
 
     const entry = {
       id: crypto.randomUUID(),
@@ -748,15 +764,10 @@
       state.imageDataUrl = entry.imageDataUrl;
       state.opacity = entry.opacity;
 
-      // Reconstruct geoCorners
+      // Reconstruct geoCorners as plain {lat, lng} objects
       state.geoCorners = {};
       for (const key of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']) {
-        const c = entry.corners[key];
-        if (_unsafeWindow.google && _unsafeWindow.google.maps) {
-          state.geoCorners[key] = new _unsafeWindow.google.maps.LatLng(c.lat, c.lng);
-        } else {
-          state.geoCorners[key] = c;
-        }
+        state.geoCorners[key] = { lat: entry.corners[key].lat, lng: entry.corners[key].lng };
       }
       state.isLocked = true;
 
